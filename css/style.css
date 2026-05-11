@@ -1,0 +1,77 @@
+/* css/style.css */
+
+body {
+    background-color: #2c3e50;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    color: #333;
+    /* Középre igazítjuk az egész játékot */
+    display: flex;
+    justify-content: center;
+    padding-top: 30px;
+    margin: 0;
+}
+
+#game-container {
+    /* EZ A LÉNYEG: Egymás mellé teszi a Canvast és a UI panelt */
+    display: flex;
+    flex-direction: row; 
+    gap: 20px; /* Távolság a pálya és a menü között */
+    align-items: flex-start; /* Fentre igazítja őket */
+}
+
+#gameCanvas {
+    background-color: #f5f6fa;
+    border: 3px solid #34495e;
+    border-radius: 8px;
+    box-shadow: 0 8px 16px rgba(0,0,0,0.4);
+}
+
+#ui-panel {
+    background-color: #ecf0f1;
+    padding: 20px;
+    border-radius: 8px;
+    width: 260px; /* Fix szélesség a menünek */
+    box-shadow: 0 8px 16px rgba(0,0,0,0.4);
+    
+    /* EZ GÁTOLJA MEG A NYÚLÁST: */
+    max-height: 600px; /* Ugyanaz, mint a canvas height="600" attribútuma */
+    overflow-y: auto;  /* Ha túl hosszú a tartalom, görgetősávot kap */
+    box-sizing: border-box;
+}
+
+/* Stílusosabb gombok */
+.ui-button {
+    width: 100%;
+    padding: 12px;
+    margin-bottom: 8px;
+    background-color: #3498db;
+    color: white;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    font-weight: bold;
+    font-size: 14px;
+    transition: background-color 0.2s, opacity 0.2s;
+}
+
+.ui-button:hover:not(:disabled) {
+    background-color: #2980b9;
+}
+
+.ui-button:disabled {
+    background-color: #bdc3c7;
+    cursor: not-allowed;
+    opacity: 0.6;
+}
+
+h2, h3 {
+    margin-top: 0;
+    color: #2c3e50;
+    border-bottom: 2px solid #bdc3c7;
+    padding-bottom: 5px;
+}
+
+hr {
+    border: 1px solid #bdc3c7;
+    margin: 15px 0;
+}

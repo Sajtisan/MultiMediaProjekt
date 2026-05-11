@@ -1,10 +1,50 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="hu">
 <head>
     <meta charset="UTF-8">
-    <title>Title</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Antiyoy Klón</title>
+    <link rel="stylesheet" href="css/style.css">
 </head>
 <body>
 
+    <div id="game-container">
+        <canvas id="gameCanvas" width="800" height="600"></canvas>
+        <div id="ui-panel">
+            <h2>Birodalom</h2>
+            <div class="ui-section">
+                <button id="end-turn-btn" class="ui-button">Kör Befejezése</button>
+            </div>
+            
+            <div class="ui-section" id="province-info" style="display: none; margin-top: 10px;">
+                <h3>Kincstár</h3>
+                <p>Arany: <strong id="ui-gold">0</strong></p>
+                <p>Profit: <span id="ui-profit">0</span></p>
+            </div>
+
+            <div class="ui-section" id="build-menu" style="display: none; margin-top: 10px;">
+                <h3>Toborzás / Építés</h3>
+                <p style="font-size: 0.8em; margin-bottom: 10px;">(Válassz ki egy üres saját mezőt a vásárláshoz!)</p>
+                <button class="ui-button build-btn" data-type="unit" data-level="1" data-cost="10" style="margin-bottom: 5px;">Paraszt (10G)</button>
+                <button class="ui-button build-btn" data-type="unit" data-level="2" data-cost="20" style="margin-bottom: 5px;">Lándzsás (20G)</button>
+                <button class="ui-button build-btn" data-type="unit" data-level="3" data-cost="30" style="margin-bottom: 5px;">Báró (30G)</button>
+                <button class="ui-button build-btn" data-type="unit" data-level="4" data-cost="40" style="margin-bottom: 15px;">Lovag (40G)</button>
+                
+                <button class="ui-button build-btn" data-type="building" data-id="tower" data-cost="15">Torony (15G)</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+
+    <script src="js/entities/Hexagon.js"></script>
+    <script src="js/entities/Player.js"></script>
+    <script src="js/entities/Unit.js"></script>
+    <script src="js/core/ProvinceManager.js"></script>
+
+    <script src="js/core/GameBoard.js"></script>
+    <script src="js/core/GameController.js"></script>
+
+    <script src="js/main.js"></script>
 </body>
 </html>
