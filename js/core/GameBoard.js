@@ -89,19 +89,21 @@ class GameBoard {
     setupPlayerStart(player) {
         let validStart = false;
         let capitalHex = null;
+        let attempts = 0; // Biztonsági számláló a fagyás ellen!
 
-        // Keresünk egy érvényes középpontot
-        while (!validStart) {
+        // Keresünk egy érvényes középpontot (max 1000 próbálkozás)
+        while (!validStart && attempts < 1000) {
+            attempts++;
             capitalHex = this.hexList[Math.floor(Math.random() * this.hexList.length)];
             
             // Ha a mező nem játszható, vagy már valakié, keresünk tovább
             if (!capitalHex.isPlayable || capitalHex.owner !== null) continue;
 
             let neighbors = this.getNeighbors(capitalHex);
-            
-            // Csak akkor jó a bázis, ha van legalább 4 szabad szomszédja (így meglesz az 5 kezdőterület)
             let freeNeighbors = neighbors.filter(n => n.owner === null);
-            if (freeNeighbors.length >= 4) {
+            
+            // Ha van 4 szabad hely, VAGY ha már 500-szor próbálkoztunk és van legalább 2 szabad hely (kicsi pálya esetén)
+            if (freeNeighbors.length >= 4 || (attempts > 500 && freeNeighbors.length >= 2)) {
                 validStart = true;
                 
                 // Beállítjuk a fővárost
@@ -110,15 +112,23 @@ class GameBoard {
                 capitalHex.hasTree = false; // Kivágjuk a fát a főváros alatt
                 capitalHex.gold = 10;
 
-                // Elfoglaljuk a 4 szomszédot
-                for (let i = 0; i < 4; i++) {
+                // Elfoglaljuk a szabad szomszédokat (amennyi épp van, max 4-et)
+                let toClaim = Math.min(4, freeNeighbors.length);
+                for (let i = 0; i < toClaim; i++) {
                     freeNeighbors[i].owner = player;
                     freeNeighbors[i].hasTree = false; // Kezdőterületen nincsenek fák
                 }
 
-                let randomSpawnHex = freeNeighbors[Math.floor(Math.random() * 4)];
-                randomSpawnHex.unit = new Unit(player, 1);
+                // Kezdő katona lerakása
+                if (toClaim > 0) {
+                    let randomSpawnHex = freeNeighbors[Math.floor(Math.random() * toClaim)];
+                    randomSpawnHex.unit = new Unit(player, 1);
+                }
             }
+        }
+        
+        if (!validStart) {
+            console.warn(`Nem maradt elég hely a pályán ${player.name} számára!`);
         }
     }
 
@@ -139,28 +149,31 @@ class GameBoard {
     }
 
 
-    getHexDefense(hex) {
-        // Ha semleges terület, nincs védelme
-        if (hex.owner === null) return 0;
+    // js/core/GameBoard.js - getHexDefense() módosítása
 
+    getHexDefense(hex) {
+        if (hex.owner === null) return 0;
         let maxDef = 0;
 
-        // 1. Saját maga vizsgálata
-        if (hex.unit) maxDef = Math.max(maxDef, hex.unit.level);
-        if (hex.building === 'capital') maxDef = Math.max(maxDef, 1);
-        if (hex.building === 'tower') maxDef = Math.max(maxDef, 2);
+        const checkDef = (h) => {
+            let d = 0;
+            // Egység védelme megegyezik a szintjével
+            if (h.unit) d = Math.max(d, h.unit.level);
+            // Épület védelme a configból jön
+            if (h.building && GameConfig.buildings[h.building]) {
+                d = Math.max(d, GameConfig.buildings[h.building].defense);
+            }
+            return d;
+        };
 
-        // 2. Szomszédok vizsgálata (A Védőháló)
+        maxDef = Math.max(maxDef, checkDef(hex));
+
         let neighbors = this.getNeighbors(hex);
         for (let n of neighbors) {
-            // Csak a saját színű szomszédok tudnak védeni
             if (n.owner === hex.owner) {
-                if (n.unit) maxDef = Math.max(maxDef, n.unit.level);
-                if (n.building === 'capital') maxDef = Math.max(maxDef, 1);
-                if (n.building === 'tower') maxDef = Math.max(maxDef, 2);
+                maxDef = Math.max(maxDef, checkDef(n));
             }
         }
-
         return maxDef;
     }
 

@@ -1,0 +1,72 @@
+// js/entities/Building.js
+
+class Building {
+    // Statikus metódus: nem kell példányosítani (new Building()), csak meghívni
+    static draw(ctx, type, x, y, size) {
+        if (!type) return;
+
+        ctx.save();
+        ctx.translate(x, y);
+
+        if (type === 'capital') { 
+            // FŐBÁZIS: Kocsma (Neon lila falak, sárgás bejárat)
+            ctx.fillStyle = "#8e44ad"; 
+            ctx.fillRect(-size*0.4, -size*0.3, size*0.8, size*0.6);
+            ctx.fillStyle = "#f1c40f"; 
+            ctx.fillRect(-size*0.15, -size*0.1, size*0.3, size*0.4);
+            ctx.strokeStyle = "#2c3e50";
+            ctx.strokeRect(-size*0.4, -size*0.3, size*0.8, size*0.6);
+            
+        } else if (type === 'house') { 
+            // GAZDASÁG: Italbolt (Zöldes árnyalat)
+            ctx.fillStyle = "#27ae60"; 
+            ctx.fillRect(-8, -8, 16, 16);
+            ctx.strokeStyle = "#2ecc71";
+            ctx.strokeRect(-8, -8, 16, 16);
+            
+        } else if (type === 'tower1') { 
+            // TIER 1: Kidobó (Sötét, masszív pötty egy "K" betűvel)
+            ctx.fillStyle = "#2c3e50";
+            ctx.beginPath();
+            ctx.arc(0, 0, size * 0.3, 0, Math.PI * 2);
+            ctx.fill();
+            ctx.fillStyle = "#ecf0f1";
+            ctx.font = "bold 10px Arial";
+            ctx.textAlign = "center";
+            ctx.textBaseline = "middle";
+            ctx.fillText("K", 0, 0);
+            
+        } else if (type === 'tower2') { 
+            // TIER 2: ZH (Egy darab papír, rajta egy nagy piros karó)
+            ctx.fillStyle = "#ecf0f1"; 
+            ctx.fillRect(-10, -12, 20, 24);
+            ctx.strokeStyle = "#bdc3c7"; 
+            ctx.lineWidth = 1;
+            ctx.strokeRect(-10, -12, 20, 24);
+            
+            ctx.fillStyle = "#e74c3c";
+            ctx.font = "bold 14px Arial";
+            ctx.textAlign = "center";
+            ctx.textBaseline = "middle";
+            ctx.fillText("F", 0, 0); // Buktató ZH!
+            
+        } else if (type === 'tower3') { 
+            // TIER 3: Rendőr (Kék pajzs/korong, piros szegéllyel)
+            ctx.fillStyle = "#2980b9"; 
+            ctx.beginPath();
+            ctx.arc(0, 0, size * 0.4, 0, Math.PI * 2);
+            ctx.fill();
+            ctx.strokeStyle = "#c0392b"; 
+            ctx.lineWidth = 3;
+            ctx.stroke();
+            
+            ctx.fillStyle = "#ecf0f1";
+            ctx.font = "bold 12px Arial";
+            ctx.textAlign = "center";
+            ctx.textBaseline = "middle";
+            ctx.fillText("R", 0, 0);
+        }
+
+        ctx.restore();
+    }
+}

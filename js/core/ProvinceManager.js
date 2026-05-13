@@ -15,20 +15,21 @@ class Province {
         this.upkeep = 0;
         this.capitalHex = null;
 
-        // Először megkeressük a fővárost, hogy beolvassuk az aranyat
         for (let hex of this.hexes) {
             if (hex.building === 'capital') {
+                this.income += GameConfig.buildings['capital'].income;
                 this.capitalHex = hex;
-                // A fővárosban tárolt aranyat átemeljük a tartományba
                 this.gold = hex.gold || 0; 
-                this.income += 5;
+            } else if (hex.building) {
+                // Ha van épület, kiolvassuk a configból a bevételét
+                this.income += GameConfig.buildings[hex.building].income;
             } else if (!hex.hasTree) {
-                this.income += 1;
+                this.income += 1; // Üres terület alapbevétele
             }
 
             if (hex.unit) {
-                const upkeepCosts = { 1: 2, 2: 6, 3: 18, 4: 54 };
-                this.upkeep += upkeepCosts[hex.unit.level] || 0;
+                // Zsold kiolvasása a configból
+                this.upkeep += GameConfig.units[hex.unit.level].upkeep;
             }
         }
     }
@@ -70,9 +71,41 @@ class ProvinceManager {
                     }
                 }
 
-                // Gazdaság kiszámolása az új provinciára
+                // --- KETTÉSZAKADÁS ÉS EGYESÜLÉS KEZELÉSE ---
+                // Megszámoljuk, hány Kocsma (főváros) van az új tartományban
+                let capitals = newProvince.hexes.filter(h => h.building === 'capital');
+
+                if (capitals.length === 0 && newProvince.hexes.length > 0) {
+                    // 1. ESET: KETTÉSZAKADÁS (Nincs főváros)
+                    // Keresünk egy alkalmas helyet az új szükség-fővárosnak
+                    let newCapitalHex = newProvince.hexes.find(h => h.unit === null && h.building === null && !h.hasTree);
+                    
+                    if (!newCapitalHex) {
+                        newCapitalHex = newProvince.hexes[0];
+                        newCapitalHex.unit = null;
+                        newCapitalHex.hasTree = false;
+                    }
+
+                    newCapitalHex.building = 'capital';
+                    newCapitalHex.gold = 0; // Az új tartomány nulláról indul
+                    console.log(`${newProvince.owner.name} területe kettészakadt! Új Kocsma jött létre.`);
+                } 
+                else if (capitals.length > 1) {
+                    // 2. ESET: EGYESÜLÉS (Több kocsma lett egy tartományban)
+                    // Az első Kocsmát megtartjuk, a többi aranyát beleöntjük, majd lebontjuk őket
+                    let mainCapital = capitals[0];
+                    for (let i = 1; i < capitals.length; i++) {
+                        mainCapital.gold = (mainCapital.gold || 0) + (capitals[i].gold || 0);
+                        capitals[i].building = null;
+                        capitals[i].gold = 0;
+                    }
+                    console.log(`${newProvince.owner.name} tartományai egyesültek! Összesített vagyon: ${mainCapital.gold}G`);
+                }
+
+                // Gazdaság újraszámolása a frissített Kocsmával
                 newProvince.calculateEconomy();
                 this.provinces.push(newProvince);
+
             } else if (hex.owner === null) {
                 // Semleges területnek nincs provinciája
                 hex.province = null;
@@ -81,29 +114,44 @@ class ProvinceManager {
 
         console.log(`BFS lefutott! Kialakult Provinciák száma: ${this.provinces.length}`);
     }
-    // js/core/ProvinceManager.js -> ProvinceManager osztályon belül
-
-    // js/core/ProvinceManager.js -> ProvinceManager osztályon belül
+    // js/core/ProvinceManager.js -> ProvinceManager osztály
 
     endTurnEconomy(player) {
-        // 1. Frissítjük a tartományokat és beolvassuk a jelenlegi aranyat
         this.updateProvinces(); 
         
+        let playerHasTerritory = false;
+
         for (let prov of this.provinces) {
-            if (prov.owner === player && prov.capitalHex) {
-                // 2. Hozzáadjuk a tiszta profitot
+            // Csak akkor vizsgáljuk, ha az adott játékosé a terület
+            if (prov.owner === player) {
+                
+                // Mivel találtunk a nevén tartományt, biztosan életben marad a kör végén!
+                playerHasTerritory = true; 
+
                 const profit = prov.income - prov.upkeep;
                 prov.gold += profit;
-                
-                // 3. Csődkezelés
-                if (prov.gold < 0) {
-                    for (let hex of prov.hexes) { hex.unit = null; }
-                    prov.gold = 0;
-                }
 
-                // 4. KRITIKUS LÉPÉS: Elmentjük a mezőre, különben elveszik!
-                prov.capitalHex.gold = prov.gold;
+                // CSŐD ELLENŐRZÉSE: Ha az arany negatívba fordul
+                if (prov.gold < 0) {
+                    console.log(`${player.name} csődbe ment! Minden katona elhagyta a posztját.`);
+                    
+                    // Minden egység (troop) meghal a tartományban, de az épületek és mezők maradnak!
+                    for (let hex of prov.hexes) {
+                        hex.unit = null; 
+                    }
+                    
+                    // Kincstár nullázása (nincs adósság a következő körre)
+                    prov.gold = 0; 
+                }
+                
+                // Akár volt csőd, akár nem, elmentjük a frissített kincstárat a Fővárosba
+                if (prov.capitalHex) {
+                    prov.capitalHex.gold = prov.gold;
+                }
             }
         }
+        
+        // Visszaadjuk, hogy maradt-e egyáltalán területe (ha false, csak akkor esik ki a játékból)
+        return playerHasTerritory; 
     }
 }

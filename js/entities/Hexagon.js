@@ -13,16 +13,16 @@ class Hexagon {
         this.isPlayable = true; // Ha false, akkor ez egy "lyuk" a pályán
         this.hasTree = false;   // Van-e rajta erdő
         this.owner = null;      // Játékos referencia (null = semleges)
-        this.unit = null;       // A rajta álló egység (Paraszt, Lovag, stb.)
-        this.building = null;   // A rajta álló épület ('capital', 'farm', 'tower')
-        this.province = null;   // Melyik provinciához tartozik (később a BFS állítja be)
+        this.unit = null;       // A rajta álló egység (Unit objektum)
+        this.building = null;   // A rajta álló épület ('capital', 'house', 'tower1', stb.)
+        this.province = null;   // Melyik provinciához tartozik
     }
 
-    // Flat Design rajzolás
     draw(ctx) {
         // Ha lyuk a pályán, nem rajzoljuk ki
         if (!this.isPlayable) return;
 
+        // Hatszög formájának megrajzolása
         ctx.beginPath();
         for (let i = 0; i < 6; i++) {
             const angleRad = (Math.PI / 3) * i; 
@@ -33,11 +33,11 @@ class Hexagon {
         }
         ctx.closePath();
         
-        // Színezés logika
+        // Színezés (Játékos színe, vagy semleges szürke)
         if (this.owner) {
-            ctx.fillStyle = this.owner.color; // A játékos pasztell színe
+            ctx.fillStyle = this.owner.color; 
         } else {
-            ctx.fillStyle = "#e0e0e0"; // Semleges terület (világosszürke)
+            ctx.fillStyle = "#e0e0e0"; 
         }
         ctx.fill();
 
@@ -46,24 +46,20 @@ class Hexagon {
         ctx.lineWidth = 2;
         ctx.stroke();
 
-        // Fa rajzolása (Egyszerű fenyőfa ikon)
+        // Fa rajzolása
         if (this.hasTree) {
             this.drawTree(ctx);
         }
 
-        // Főváros rajzolása (Ideiglenes egyszerű ház ikon)
-        if (this.building === 'capital') {
-            this.drawCapital(ctx);
-        }
-
-        // Torony rajzolása
-        if (this.building === 'tower') {
-            this.drawTower(ctx);
+        // Épület rajzolásának DELEGÁLÁSA a Building osztálynak
+        if (this.building) {
+            Building.draw(ctx, this.building, this.x, this.y, this.size);
         }
     }
 
     drawTree(ctx) {
-        ctx.fillStyle = "#2ecc71"; // Fűzöld
+        // Fenyőfa zöld lombja
+        ctx.fillStyle = "#2ecc71"; 
         ctx.beginPath();
         ctx.moveTo(this.x, this.y - this.size * 0.5); // Csúcs
         ctx.lineTo(this.x - this.size * 0.4, this.y + this.size * 0.3); // Bal alja
@@ -71,37 +67,11 @@ class Hexagon {
         ctx.closePath();
         ctx.fill();
         
-        // Törzs
+        // Barna törzs
         ctx.fillStyle = "#795548";
         ctx.fillRect(this.x - this.size * 0.1, this.y + this.size * 0.3, this.size * 0.2, this.size * 0.3);
     }
 
-    drawCapital(ctx) {
-        ctx.fillStyle = "#ecf0f1"; // Fehér fal
-        ctx.fillRect(this.x - this.size * 0.4, this.y - this.size * 0.2, this.size * 0.8, this.size * 0.5);
-        ctx.fillStyle = "#e74c3c"; // Piros tető
-        ctx.beginPath();
-        ctx.moveTo(this.x - this.size * 0.5, this.y - this.size * 0.2);
-        ctx.lineTo(this.x, this.y - this.size * 0.6);
-        ctx.lineTo(this.x + this.size * 0.5, this.y - this.size * 0.2);
-        ctx.closePath();
-        ctx.fill();
-    }
-
-    drawTower(ctx) {
-        ctx.fillStyle = "#7f8c8d";
-        ctx.beginPath();
-        ctx.arc(this.x, this.y, this.size * 0.4, 0, Math.PI * 2);
-        ctx.fill();
-        ctx.strokeStyle = "#2c3e50";
-        ctx.lineWidth = 2;
-        ctx.stroke();
-        // Bástya teteje (egyszerű lőrések)
-        ctx.fillStyle = "#2c3e50";
-        ctx.fillRect(this.x - 5, this.y - this.size * 0.3, 10, 5);
-    }
-
-    // Hexagon.js bővítése
     isPointInside(px, py) {
         const dx = px - this.x;
         const dy = py - this.y;

@@ -1,50 +1,142 @@
 <!DOCTYPE html>
 <html lang="hu">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Antiyoy Klón</title>
     <link rel="stylesheet" href="css/style.css">
 </head>
-<body>
 
+<body>
+    <div id="game-over-screen"
+        style="display: none; position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: rgba(0,0,0,0.85); z-index: 1000; flex-direction: column; justify-content: center; align-items: center; color: white; font-family: Arial, sans-serif;">
+        <h1 id="game-over-title" style="font-size: 4rem; text-shadow: 2px 2px 4px #000; margin-bottom: 10px;"></h1>
+        <p id="game-over-desc" style="font-size: 1.5rem; margin-bottom: 30px; text-align: center; max-width: 600px;">
+        </p>
+        <button onclick="location.reload()"
+            style="padding: 15px 30px; font-size: 1.2rem; font-weight: bold; background: #8e44ad; color: white; border: 2px solid #9b59b6; cursor: pointer; border-radius: 8px; text-transform: uppercase;">Újra
+            az utcára (Új játék)</button>
+    </div>
+    <div id="main-menu" class="menu-overlay">
+        <div class="menu-content">
+            <h1 class="menu-title">SPÍD</h1>
+            <p class="menu-subtitle">Alvilági Stratégia</p>
+
+            <div class="menu-group">
+                <label for="map-size">Pálya mérete:</label>
+                <select id="map-size">
+                    <option value="45">Kicsi (Gyors meccs)</option>
+                    <option value="35" selected>Közepes (Standard)</option>
+                    <option value="25">Nagy (Stratégiai)</option>
+                    <option value="18">Hatalmas (Városháza szint)</option>
+                </select>
+            </div>
+
+            <div class="menu-group">
+                <label for="player-count">Rivális klánok száma:</label>
+                <select id="player-count">
+                    <option value="2">1 (Csak a Pirosak)</option>
+                    <option value="3">2 (Piros + Zöld)</option>
+                    <option value="4" selected>3 (Alapértelmezett)</option>
+                    <option value="5">4 (Nagy háború)</option>
+                    <option value="6">5 (Káosz a negyedben)</option>
+                </select>
+            </div>
+
+            <div class="button-stack">
+                <button id="start-game-btn" class="ui-button primary">Új hódítás indítása</button>
+                <button id="load-game-btn" class="ui-button secondary">Játék folytatása</button>
+            </div>
+
+            <div class="menu-footer">
+                <button class="text-link" onclick="$('#guide-panel').fadeIn()">Hogyan játssz?</button>
+            </div>
+
+            <div class="credits-box">
+                <p>Készítette: <strong>Raffai Sajti Dávid</strong></p>
+                <p>Neptun kód: <strong>J7KVSU</strong></p>
+                <p class="uni-info">SZTE TTIK - Programtervező informatikus</p>
+            </div>
+
+            <div id="guide-panel"
+                style="display:none; position:absolute; right: 260px; top: 10px; width: 300px; background: #2c3e50; color: white; padding: 15px; border-radius: 8px; z-index: 100;">
+                <h3>Alvilági Kisokos</h3>
+                <hr>
+                <p><strong>Csöves (Lvl 1):</strong> Alap egység, olcsó tartás.</p>
+                <p><strong>Kocsma (Capital):</strong> A központod, itt gyűlik a pénz.</p>
+                <p><strong>Italbolt (House):</strong> +4 Arany / kör.</p>
+                <p><strong>Rendőr (Tower 3):</strong> Erős védelem a betolakodók ellen.</p>
+                <button onclick="$('#guide-panel').toggle()">Bezárás</button>
+            </div>
+
+            <button onclick="$('#guide-panel').toggle()" style="width:100%; margin-top:10px;">SÚGÓ / INFO</button>
+        </div>
+    </div>
     <div id="game-container">
         <canvas id="gameCanvas" width="800" height="600"></canvas>
         <div id="ui-panel">
             <h2>Birodalom</h2>
-            <div class="ui-section">
-                <button id="end-turn-btn" class="ui-button">Kör Befejezése</button>
+            <div class="action-buttons">
+                <button id="end-turn-btn" class="ui-button" style="background-color: #27ae60;">Kör befejezése</button>
+                <button id="undo-btn" class="ui-button" style="background-color: #9b59b6;">Visszavonás</button>
             </div>
-            
+
             <div class="ui-section" id="province-info" style="display: none; margin-top: 10px;">
                 <h3>Kincstár</h3>
                 <p>Arany: <strong id="ui-gold">0</strong></p>
                 <p>Profit: <span id="ui-profit">0</span></p>
             </div>
 
-            <div class="ui-section" id="build-menu" style="display: none; margin-top: 10px;">
-                <h3>Toborzás / Építés</h3>
-                <p style="font-size: 0.8em; margin-bottom: 10px;">(Válassz ki egy üres saját mezőt a vásárláshoz!)</p>
-                <button class="ui-button build-btn" data-type="unit" data-level="1" data-cost="10" style="margin-bottom: 5px;">Paraszt (10G)</button>
-                <button class="ui-button build-btn" data-type="unit" data-level="2" data-cost="20" style="margin-bottom: 5px;">Lándzsás (20G)</button>
-                <button class="ui-button build-btn" data-type="unit" data-level="3" data-cost="30" style="margin-bottom: 5px;">Báró (30G)</button>
-                <button class="ui-button build-btn" data-type="unit" data-level="4" data-cost="40" style="margin-bottom: 15px;">Lovag (40G)</button>
-                
-                <button class="ui-button build-btn" data-type="building" data-id="tower" data-cost="15">Torony (15G)</button>
+            <div id="build-menu" style="display: none; margin-top: 15px;">
+                <h4 style="margin-bottom: 5px; color: #2c3e50;">Építkezés</h4>
+                <button class="ui-button build-btn" data-type="building" data-id="house" data-cost="12">Italbolt
+                    (12G)</button>
+                <button class="ui-button build-btn" data-type="building" data-id="tower1" data-cost="15">Kidobó
+                    (15G)</button>
+                <button class="ui-button build-btn" data-type="building" data-id="tower2" data-cost="35">ZH
+                    (35G)</button>
+                <button class="ui-button build-btn" data-type="building" data-id="tower3" data-cost="70">Rendőr
+                    (70G)</button>
+
+                <h4 style="margin-top: 15px; margin-bottom: 5px; color: #2c3e50;">Toborzás</h4>
+                <button class="ui-button build-btn" data-type="unit" data-level="1" data-cost="10">Csöves (10G)</button>
+                <button class="ui-button build-btn" data-type="unit" data-level="2" data-cost="20">Egyetemista
+                    (20G)</button>
+                <button class="ui-button build-btn" data-type="unit" data-level="3" data-cost="30">Delinquent
+                    (30G)</button>
+                <button class="ui-button build-btn" data-type="unit" data-level="4" data-cost="40">Maffiás
+                    (40G)</button>
+            </div>
+            <div class="ui-section" id="action-menu" style="display: none; margin-top: 10px;">
+                <h3>Kijelölt mező</h3>
+                <p id="selected-info" style="margin-bottom: 10px; font-weight: bold;">Semmi</p>
+                <button id="sell-btn" class="ui-button" style="background-color: #e74c3c;">Eladás (+0G)</button>
             </div>
         </div>
     </div>
 
-    <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 
-    <script src="js/entities/Hexagon.js"></script>
+    <script src="js/core/GameConfig.js"></script>
     <script src="js/entities/Player.js"></script>
     <script src="js/entities/Unit.js"></script>
+    <script src="js/entities/Building.js"></script>
+    <script src="js/entities/Hexagon.js"></script>
+
     <script src="js/core/ProvinceManager.js"></script>
+    <script src="js/core/HistoryManager.js"></script>
+    <script src="js/core/UIManager.js"></script>
+    <script src="js/core/AIController.js"></script>
+    <script src="js/core/Pathfinder.js"></script>
+    <script src="js/core/Renderer.js"></script>
 
     <script src="js/core/GameBoard.js"></script>
     <script src="js/core/GameController.js"></script>
-
     <script src="js/main.js"></script>
 </body>
+
+<script src="js/core/GameOverManager.js"></script>
+</body>
+
 </html>
