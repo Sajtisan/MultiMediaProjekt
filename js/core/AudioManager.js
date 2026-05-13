@@ -1,6 +1,8 @@
-// js/core/AudioManager.js
-
 class AudioManager {
+    /**
+     * Betölti a játék hangeffektjeit és beállítja a háttérzenét.
+     * @modifies {AudioManager.sounds} - Inicializálja az Audio objektumokat.
+     */
     constructor() {
         this.sounds = {
             bgMusic: new Audio('audio/background_night_vibes.mp3'),
@@ -15,6 +17,11 @@ class AudioManager {
         this.sounds.bgMusic.volume = 0.4;
     }
 
+    /**
+     * Lejátszik egy specifikus hangeffektust az elejétől.
+     * @param {string} key - A hang azonosítója (pl. 'buy', 'move').
+     * @modifies {Audio} - Visszaállítja a hangfájl idejét 0-ra és elindítja.
+     */
     play(key) {
         if (this.sounds[key]) {
             this.sounds[key].currentTime = 0;
@@ -22,6 +29,10 @@ class AudioManager {
         }
     }
 
+    /**
+     * Elindítja a háttérzenét végtelenítve (loop).
+     * @modifies {Audio} - Elindítja a bgMusic lejátszását.
+     */
     startMusic() {
         this.sounds.bgMusic.play().catch(e => console.log("Music blocked until interaction"));
     }

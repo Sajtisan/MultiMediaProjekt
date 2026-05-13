@@ -1,6 +1,12 @@
-// js/core/GameController.js
-
 class GameController {
+    /**
+     * A játék központi agya. Inicializálja a játéktáblát, a játékosokat és az összes alrendszert.
+     * @param {string} canvasId - A HTML canvas elem azonosítója.
+     * @param {number} hexSize - A hatszögek sugara.
+     * @param {number} playerCount - A résztvevő klánok száma.
+     * @modifies {GameController.board, GameController.players, GameController.ui, GameController.renderer, stb.} - Létrehozza a teljes futtatókörnyezetet.
+     * @calls {GameController.setupPlayers, GameBoard.setupPlayerStart, ProvinceManager.updateProvinces}
+     */
     constructor(canvasId, hexSize, playerCount) {
         this.canvas = document.getElementById(canvasId);
         this.ctx = this.canvas.getContext('2d');
@@ -36,6 +42,13 @@ class GameController {
         return this.players[this.currentPlayerIdx];
     }
 
+    /**
+     * Inicializálja a játékosokat a megadott létszám alapján, kiosztva a színeket és neveket.
+     * Az első játékos mindig a humán (Te), a többi AI által vezérelt.
+     * @param {number} numPlayers - A klánok (játékosok) teljes száma.
+     * @modifies {GameController.players} - Létrehozza és feltölti a játékosokat tartalmazó tömböt.
+     * @calls {Player}
+     */
     setupPlayers(numPlayers) {
         const allColors = ["#3498db", "#e74c3c", "#2ecc71", "#f1c40f", "#00bcd4", "#9b59b6"];
         const allNames = ["Kék (Te)", "Piros (AI)", "Zöld (AI)", "Sárga (AI)", "Cián (AI)", "Lila (AI)"];
@@ -47,7 +60,7 @@ class GameController {
     }
 
     // ==========================================
-    // HIDAK (FACADES) A RÉGI HÍVÁSOKHOZ
+    // HIDAK (FACADES) A HÍVÁSOKHOZ
     // ==========================================
     render() {
         if (this.renderer) this.renderer.render();
@@ -58,6 +71,13 @@ class GameController {
     }
     // ==========================================
 
+
+    /**
+     * A fő eseménykezelő a játéktérre (canvas) történő kattintásokhoz.
+     * @param {MouseEvent} e - Az egérkattintás eseménye.
+     * @modifies {GameController.selectedHex, GameController.reachableHexes, Hexagon} - Kezeli a kijelölést, mozgást, foglalást.
+     * @calls {HistoryManager.saveState, GameBoard.getHexAt, ProvinceManager.updateProvinces, GameOverManager.checkGameState, UIManager.update, Renderer.render}
+     */
     handleClick(e) {
         this.history.saveState();
         const rect = this.canvas.getBoundingClientRect();
@@ -113,6 +133,11 @@ class GameController {
         this.ui.update();
     }
 
+    /**
+     * Lezárja az aktuális játékos körét és átadja az irányítást a következőnek.
+     * @modifies {GameController.currentPlayerIdx, Player.isDead, Unit.currentMovement} - Lépteti a kört, kezeli a csődöt, visszaállítja a lépéspontokat.
+     * @calls {GameController.saveGame, ProvinceManager.endTurnEconomy, GameBoard.spreadTrees, GameOverManager.checkGameState, AIController.takeTurn}
+     */
     endTurn() {
         // Ha már vége a játéknak, senki ne csináljon semmit!
         if (this.gameOverManager.isGameOver) return; 
@@ -124,7 +149,6 @@ class GameController {
         const isStillAlive = this.provinceManager.endTurnEconomy(this.currentPlayer);
 
         if (!isStillAlive) {
-            console.log(`${this.currentPlayer.name} kiszorult a negyedből!`); // alert() helyett csak logolunk
             this.currentPlayer.isDead = true;
         }
 
@@ -160,20 +184,23 @@ class GameController {
         }
     }
 
-    // js/core/GameController.js -> buyItem metódus frissítése
-
+    /**
+     * Megvásárol egy egységet vagy épületet a kijelölt mezőre.
+     * @param {string} type - A vásárlás típusa ('unit' vagy 'building').
+     * @param {string|number} value - Az egység szintje vagy az épület azonosítója.
+     * @param {number} cost - A levonandó arany mennyisége.
+     * @modifies {Hexagon, Province.gold} - Lerakja az entitást és levonja az árát a kincstárból.
+     * @calls {HistoryManager.saveState, ProvinceManager.updateProvinces, UIManager.update, Renderer.render}
+     */
     buyItem(type, value, cost) {
         if (!this.selectedHex) {
-            console.warn("Nincs kijelölt mező a vásárláshoz!");
             return;
         }
         if (!this.selectedHex.province) {
-            console.warn("Ez a mező nem tartozik érvényes tartományhoz!");
             return;
         }
 
         if (this.selectedHex.unit !== null || this.selectedHex.building !== null || this.selectedHex.hasTree) {
-            console.log("Ez a mező már foglalt!");
             return;
         }
 
@@ -181,7 +208,6 @@ class GameController {
         const capital = prov.hexes.find(h => h.building === 'capital');
 
         if (!capital) {
-            console.error("Hiba: Ebben a tartományban nincs Kocsma!");
             return;
         }
 
@@ -200,11 +226,14 @@ class GameController {
             this.provinceManager.updateProvinces();
             this.ui.update();
             this.render();
-        } else {
-            console.log(`Nincs elég pénz! Szükséges: ${cost}G, Van: ${capital.gold}G`);
         }
     }
 
+    /**
+     * Megsemmisíti/eladja a kijelölt mezőn lévő épületet vagy egységet.
+     * @modifies {Hexagon, Province.gold} - Törli az entitást és hozzáadja a visszatérítést a kincstárhoz.
+     * @calls {HistoryManager.saveState, ProvinceManager.updateProvinces, UIManager.update, Renderer.render}
+     */
     sellItem() {
         this.history.saveState();
         if (!this.selectedHex || !this.selectedHex.province) return;
@@ -230,12 +259,21 @@ class GameController {
         this.render();
     }
 
+    /**
+     * Elmenti a játék aktuális állását a böngésző memóriájába (localStorage).
+     * @modifies {localStorage} - Felülírja a 'spid_savegame' kulcsot a pálya és a játékosok adataival.
+     */
     saveGame() {
+        // Kinyerjük a hexSize-t
+        const currentHexSize = this.board.hexList.length > 0 ? this.board.hexList[0].size : 35;
+
         const saveData = {
-            players: this.players,
+            hexSize: currentHexSize,
+            playerCount: this.players.length,
             currentPlayerIdx: this.currentPlayerIdx,
             boardData: this.board.hexList.map(h => ({
                 q: h.q, r: h.r,
+                isPlayable: h.isPlayable,                // ÚJ: A lyukakat is mentjük!
                 ownerId: h.owner ? h.owner.id : null,
                 unitLevel: h.unit ? h.unit.level : null,
                 building: h.building,
@@ -244,9 +282,14 @@ class GameController {
             }))
         };
         localStorage.setItem('spid_savegame', JSON.stringify(saveData));
-        console.log("Játék mentve!");
     }
 
+    /**
+     * Betölt egy mentett játékállást a localStorage-ból és felülírja a játékteret.
+     * @returns {boolean} Igaz, ha a betöltés sikeres volt, különben hamis.
+     * @modifies {GameController.currentPlayerIdx, Hexagon} - Visszaállítja a mentett állapotokat.
+     * @calls {ProvinceManager.updateProvinces, Renderer.render, UIManager.update}
+     */
     loadGame() {
         const data = JSON.parse(localStorage.getItem('spid_savegame'));
         if (!data) {
@@ -255,26 +298,30 @@ class GameController {
         }
 
         try {
-            // Visszaállítjuk a köradatokat
             this.currentPlayerIdx = data.currentPlayerIdx;
 
-            // Visszaállítjuk a hexákat
             data.boardData.forEach(savedHex => {
                 let hex = this.board.hexList.find(h => h.q === savedHex.q && h.r === savedHex.r);
                 if (hex) {
-                    hex.owner = savedHex.ownerId !== null ? this.players[savedHex.ownerId] : null;
-                    hex.building = savedHex.building;
+                    // Visszatöltjük a lyukakat és fákat
+                    hex.isPlayable = savedHex.isPlayable;
                     hex.hasTree = savedHex.hasTree;
-                    hex.gold = savedHex.gold;
+                    
+                    // Tulajdonos és épületek visszaállítása
+                    hex.owner = savedHex.ownerId !== null ? this.players[savedHex.ownerId] : null;
+                    hex.building = savedHex.building || null; // A || null fontos, hogy eltüntesse a véletlen generált Kocsmákat!
+                    hex.gold = savedHex.gold || 0;
+                    
+                    // Egységek visszaállítása
                     if (savedHex.unitLevel) {
                         hex.unit = new Unit(hex.owner, savedHex.unitLevel);
+                        hex.unit.currentMovement = 0; // Betöltés után biztonsági okokból már nem mozognak
                     } else {
-                        hex.unit = null;
+                        hex.unit = null; // Letöröljük a start-up során generált véletlen egységeket!
                     }
                 }
             });
 
-            // Újraépítjük a tartományi rendszert a betöltött adatok alapján
             this.provinceManager.updateProvinces();
             this.render();
             this.ui.update();

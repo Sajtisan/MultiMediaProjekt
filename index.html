@@ -4,20 +4,12 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Antiyoy Klón</title>
+    <title>SPÍD - Alvilági Stratégia</title>
     <link rel="stylesheet" href="css/style.css">
 </head>
 
 <body>
-    <div id="game-over-screen"
-        style="display: none; position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: rgba(0,0,0,0.85); z-index: 1000; flex-direction: column; justify-content: center; align-items: center; color: white; font-family: Arial, sans-serif;">
-        <h1 id="game-over-title" style="font-size: 4rem; text-shadow: 2px 2px 4px #000; margin-bottom: 10px;"></h1>
-        <p id="game-over-desc" style="font-size: 1.5rem; margin-bottom: 30px; text-align: center; max-width: 600px;">
-        </p>
-        <button onclick="location.reload()"
-            style="padding: 15px 30px; font-size: 1.2rem; font-weight: bold; background: #8e44ad; color: white; border: 2px solid #9b59b6; cursor: pointer; border-radius: 8px; text-transform: uppercase;">Újra
-            az utcára (Új játék)</button>
-    </div>
+
     <div id="main-menu" class="menu-overlay">
         <div class="menu-content">
             <h1 class="menu-title">SPÍD</h1>
@@ -58,23 +50,14 @@
                 <p>Neptun kód: <strong>J7KVSU</strong></p>
                 <p class="uni-info">SZTE TTIK - Programtervező informatikus</p>
             </div>
-
-            <div id="guide-panel"
-                style="display:none; position:absolute; right: 260px; top: 10px; width: 300px; background: #2c3e50; color: white; padding: 15px; border-radius: 8px; z-index: 100;">
-                <h3>Alvilági Kisokos</h3>
-                <hr>
-                <p><strong>Csöves (Lvl 1):</strong> Alap egység, olcsó tartás.</p>
-                <p><strong>Kocsma (Capital):</strong> A központod, itt gyűlik a pénz.</p>
-                <p><strong>Italbolt (House):</strong> +4 Arany / kör.</p>
-                <p><strong>Rendőr (Tower 3):</strong> Erős védelem a betolakodók ellen.</p>
-                <button onclick="$('#guide-panel').toggle()">Bezárás</button>
-            </div>
-
-            <button onclick="$('#guide-panel').toggle()" style="width:100%; margin-top:10px;">SÚGÓ / INFO</button>
         </div>
     </div>
-    <div id="game-container">
+
+
+    <div id="game-container" style="display: none;">
+        
         <canvas id="gameCanvas" width="800" height="600"></canvas>
+        
         <div id="ui-panel">
             <h2>Birodalom</h2>
             <div class="action-buttons">
@@ -90,53 +73,86 @@
 
             <div id="build-menu" style="display: none; margin-top: 15px;">
                 <h4 style="margin-bottom: 5px; color: #2c3e50;">Építkezés</h4>
-                <button class="ui-button build-btn" data-type="building" data-id="house" data-cost="12">Italbolt
-                    (12G)</button>
-                <button class="ui-button build-btn" data-type="building" data-id="tower1" data-cost="15">Kidobó
-                    (15G)</button>
-                <button class="ui-button build-btn" data-type="building" data-id="tower2" data-cost="35">ZH
-                    (35G)</button>
-                <button class="ui-button build-btn" data-type="building" data-id="tower3" data-cost="70">Rendőr
-                    (70G)</button>
+                <button class="ui-button build-btn" data-type="building" data-id="house" data-cost="12">Italbolt (12G)</button>
+                <button class="ui-button build-btn" data-type="building" data-id="tower1" data-cost="15">Kidobó (15G)</button>
+                <button class="ui-button build-btn" data-type="building" data-id="tower2" data-cost="35">ZH (35G)</button>
+                <button class="ui-button build-btn" data-type="building" data-id="tower3" data-cost="70">Rendőr (70G)</button>
 
                 <h4 style="margin-top: 15px; margin-bottom: 5px; color: #2c3e50;">Toborzás</h4>
                 <button class="ui-button build-btn" data-type="unit" data-level="1" data-cost="10">Csöves (10G)</button>
-                <button class="ui-button build-btn" data-type="unit" data-level="2" data-cost="20">Egyetemista
-                    (20G)</button>
-                <button class="ui-button build-btn" data-type="unit" data-level="3" data-cost="30">Delinquent
-                    (30G)</button>
-                <button class="ui-button build-btn" data-type="unit" data-level="4" data-cost="40">Maffiás
-                    (40G)</button>
+                <button class="ui-button build-btn" data-type="unit" data-level="2" data-cost="20">Egyetemista (20G)</button>
+                <button class="ui-button build-btn" data-type="unit" data-level="3" data-cost="30">Delinquent (30G)</button>
+                <button class="ui-button build-btn" data-type="unit" data-level="4" data-cost="40">Maffiás (40G)</button>
             </div>
+
             <div class="ui-section" id="action-menu" style="display: none; margin-top: 10px;">
                 <h3>Kijelölt mező</h3>
                 <p id="selected-info" style="margin-bottom: 10px; font-weight: bold;">Semmi</p>
                 <button id="sell-btn" class="ui-button" style="background-color: #e74c3c;">Eladás (+0G)</button>
             </div>
+            
+            <button id="open-guide-btn" class="ui-button secondary-btn" style="margin-top: 20px;">Súgó / Info</button>
         </div>
     </div>
+
+
+    <div id="guide-panel" style="display:none; position:fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); width: 450px; background: #16213e; border: 2px solid #3498db; padding: 25px; border-radius: 15px; z-index: 3000; box-shadow: 0 0 50px rgba(0,0,0,0.9); color: #ecf0f1;">
+        <h2 style="color: #f1c40f; text-align: center;">Hogyan játssz? (SPÍD Kisokos)</h2>
+        <hr style="border-color: #8e44ad;">
+        
+        <div style="line-height: 1.6; max-height: 400px; overflow-y: auto; padding-right: 10px;">
+            <p><strong>Cél:</strong> Maradj te az egyetlen klán az éjszakában! Foglald el az ellenséges Kocsmákat, és szorítsd ki a többieket.</p>
+            <p><strong>Gazdaság:</strong> Minden birtokolt mező +1 Aranyat ad körönként. Az Italbolt további +4-et.</p>
+            
+            <h3 style="color: #3498db; margin-top: 15px;">Épületek</h3>
+            <ul style="padding-left: 20px;">
+                <li><strong>Kocsma (Főváros):</strong> Itt gyűlik a pénz. Ha elveszted, a terület bevétele a támadóé lesz!</li>
+                <li><strong>Italbolt (House):</strong> A gazdaság motorja. +4 Aranyat ad körönként az adott tartománynak.</li>
+                <li><strong>Kidobó (T1), ZH (T2), Rendőr (T3):</strong> Védelmi tornyok. Egy T2-es ZH-t például csak egy legalább 3-as szintű egység (Delinquent vagy Maffiás) tud elfoglalni.</li>
+            </ul>
+            
+            <h3 style="color: #e74c3c;">Egységek</h3>
+            <ul style="padding-left: 20px;">
+                <li><strong>Csöves (Lvl 1):</strong> Olcsó fenntartani (2G).</li>
+                <li><strong>Egyetemista (Lvl 2):</strong> Gyors területfoglaló (6G).</li>
+                <li><strong>Delinquent (Lvl 3):</strong> Komoly harcos (18G).</li>
+                <li><strong>Maffiás (Lvl 4):</strong> A legerősebb fegyver (54G). <em>Vigyázz, hamar csődbe visz!</em></li>
+            </ul>
+        </div>
+        
+        <button id="close-guide-btn" class="ui-button danger-btn" style="margin-top: 20px;">Megértettem, irány az utca!</button>
+    </div>
+
+
+    <div id="game-over-screen" style="display: none; position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: rgba(0,0,0,0.85); z-index: 4000; flex-direction: column; justify-content: center; align-items: center; color: white; font-family: Arial, sans-serif;">
+        <h1 id="game-over-title" style="font-size: 4rem; text-shadow: 2px 2px 4px #000; margin-bottom: 10px;"></h1>
+        <p id="game-over-desc" style="font-size: 1.5rem; margin-bottom: 30px; text-align: center; max-width: 600px;"></p>
+        <button onclick="location.reload()" style="padding: 15px 30px; font-size: 1.2rem; font-weight: bold; background: #8e44ad; color: white; border: 2px solid #9b59b6; cursor: pointer; border-radius: 8px; text-transform: uppercase;">Újra az utcára (Új játék)</button>
+    </div>
+
 
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 
     <script src="js/core/GameConfig.js"></script>
+
     <script src="js/entities/Player.js"></script>
     <script src="js/entities/Unit.js"></script>
     <script src="js/entities/Building.js"></script>
     <script src="js/entities/Hexagon.js"></script>
 
+    <script src="js/core/AudioManager.js"></script>
     <script src="js/core/ProvinceManager.js"></script>
     <script src="js/core/HistoryManager.js"></script>
     <script src="js/core/UIManager.js"></script>
     <script src="js/core/AIController.js"></script>
     <script src="js/core/Pathfinder.js"></script>
     <script src="js/core/Renderer.js"></script>
+    <script src="js/core/GameOverManager.js"></script>
 
     <script src="js/core/GameBoard.js"></script>
     <script src="js/core/GameController.js"></script>
+
     <script src="js/main.js"></script>
-</body>
 
-<script src="js/core/GameOverManager.js"></script>
 </body>
-
 </html>

@@ -1,11 +1,18 @@
-// js/core/GameOverManager.js
-
 class GameOverManager {
+    /**
+     * Inicializálja a játék végét és a győzelmi/vereség kondíciókat figyelő rendszert.
+     * @param {GameController} game - A központi játékvezérlő referenciája.
+     */
     constructor(game) {
         this.game = game;
         this.isGameOver = false;
     }
 
+    /**
+     * Ellenőrzi a játék állapotát: megvizsgálja, hogy a játékos elvesztette-e minden területét, vagy ő maradt-e az egyetlen túlélő.
+     * @modifies {Player.isDead} - A terület nélkül maradt játékosoknál igazra állítja a kiesés flaget.
+     * @calls {GameOverManager.triggerGameEnd}
+     */
     checkGameState() {
         if (this.isGameOver) return;
 
@@ -50,6 +57,13 @@ class GameOverManager {
         }
     }
 
+    /**
+     * Aktiválja a játék vége (Game Over) képernyőt a megfelelő üzenettel és színnel.
+     * @param {string} title - A megjelenő főcím (pl. "A Negyed Ura!").
+     * @param {string} desc - A részletes leírás az eredményről.
+     * @param {string} color - A cím szövegszíne (hexadecimális kód).
+     * @modifies {GameOverManager.isGameOver, DOM} - Lezárja a játékot és megjeleníti a HTML/CSS panelt.
+     */
     triggerGameEnd(title, desc, color) {
         this.isGameOver = true;
         $('#game-over-title').text(title).css('color', color);

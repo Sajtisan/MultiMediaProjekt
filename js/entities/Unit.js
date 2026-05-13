@@ -1,6 +1,9 @@
-// js/entities/Unit.js
-
 class Unit {
+    /**
+     * Létrehoz egy új egységet (katonát).
+     * @param {Player} owner - Az egység tulajdonosa.
+     * @param {number} level - Az egység szintje (1: Csöves, 2: Egyetemista, 3: Delinquent, 4: Maffiás).
+     */
     constructor(owner, level) {
         this.owner = owner;
         // Szintek: 1: Csöves, 2: Egyetemista, 3: Delinquent, 4: Maffiás
@@ -9,6 +12,14 @@ class Unit {
         this.currentMovement = this.maxMovement;
     }
 
+    /**
+     * Kirajzolja az egységet (szintikonnal és fáradtságjelzővel) a canvasra.
+     * @param {CanvasRenderingContext2D} ctx - A rajzolási kontextus.
+     * @param {number} x - Az X koordináta.
+     * @param {number} y - Az Y koordináta.
+     * @param {number} size - A skálázási méret.
+     * @modifies {Canvas} - Rajzol a vászonra.
+     */
     draw(ctx, x, y, size) {
         // Katona alapja (Játékos színe)
         ctx.fillStyle = this.owner.color; 
@@ -61,6 +72,10 @@ class Unit {
         }
     }
 
+    /**
+     * Visszaállítja az egység mozgáspontjait a maximumra (általában a kör elején).
+     * @modifies {Unit.currentMovement} - Újratölti a lépéseket.
+     */
     resetMovement() {
         this.currentMovement = this.maxMovement;
     }

@@ -1,13 +1,19 @@
-// js/core/AIController.js
-
 class AIController {
+    /**
+     * Létrehozza a gépi ellenfelek vezérléséért felelős egységet.
+     * @param {GameController} gameController - A központi játékvezérlő referenciája.
+     */
     constructor(gameController) {
         this.game = gameController;
     }
 
+    /**
+     * Végrehajtja az AI játékos logikáját (Mozgás, Támadás, Építés, Toborzás).
+     * @param {Player} player - Az aktuális AI játékos objektuma.
+     * @modifies {Hexagon, Province} - Egységeket mozgat, területeket foglal, aranyat von le/ad hozzá.
+     * @calls {Pathfinder.calculateReachableHexes, ProvinceManager.updateProvinces, Renderer.render, GameController.endTurn}
+     */
     takeTurn(player) {
-        console.log(`${player.name} (AI) akcióba lép a negyedben...`);
-
         // ==========================================
         // 1. FÁZIS: MOZGATÁS ÉS TÁMADÁS
         // ==========================================

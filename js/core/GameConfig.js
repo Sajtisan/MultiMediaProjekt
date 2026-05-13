@@ -1,5 +1,3 @@
-// js/core/GameConfig.js
-
 const GameConfig = {
     // --- ÉPÜLETEK ---
     buildings: {
@@ -15,6 +13,6 @@ const GameConfig = {
         1: { level: 1, name: 'Csöves', cost: 10, upkeep: 2 },
         2: { level: 2, name: 'Egyetemista', cost: 20, upkeep: 6 },
         3: { level: 3, name: 'Delinquent', cost: 30, upkeep: 18 },
-        4: { level: 4, name: 'Maffiás', cost: 40, upkeep: 54 } // 40-re állítottam a vételárat a korábbi kód alapján
+        4: { level: 4, name: 'Maffiás', cost: 40, upkeep: 54 }
     }
 };

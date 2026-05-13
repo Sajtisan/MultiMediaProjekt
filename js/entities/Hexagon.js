@@ -1,28 +1,34 @@
-// js/entities/Hexagon.js
-
 class Hexagon {
+    /**
+     * Létrehoz egy hatszöget (mezőt) a játéktéren.
+     * @param {number} q - Rács koordináta oszlop.
+     * @param {number} r - Rács koordináta sor.
+     * @param {number} x - Fizikai X pixel koordináta a canvas-en.
+     * @param {number} y - Fizikai Y pixel koordináta a canvas-en.
+     * @param {number} size - A hatszög mérete (sugara).
+     */
     constructor(q, r, x, y, size) {
-        // Koordináták (q, r a rácslogikához, x, y a rajzoláshoz)
         this.q = q;
         this.r = r;
         this.x = x;
         this.y = y;
         this.size = size;
-        
-        // Antiyoy logikai változók
-        this.isPlayable = true; // Ha false, akkor ez egy "lyuk" a pályán
-        this.hasTree = false;   // Van-e rajta erdő
-        this.owner = null;      // Játékos referencia (null = semleges)
-        this.unit = null;       // A rajta álló egység (Unit objektum)
-        this.building = null;   // A rajta álló épület ('capital', 'house', 'tower1', stb.)
-        this.province = null;   // Melyik provinciához tartozik
+        this.isPlayable = true;
+        this.hasTree = false;
+        this.owner = null;
+        this.unit = null;
+        this.building = null;
+        this.province = null;
     }
 
+    /**
+     * Kirajzolja magát a hatszöget, a fát és delegálja az egység/épület rajzolását.
+     * @param {CanvasRenderingContext2D} ctx - A rajzolási kontextus.
+     * @modifies {Canvas} - Rajzol a vászonra.
+     * @calls {Hexagon.drawTree, Building.draw}
+     */
     draw(ctx) {
-        // Ha lyuk a pályán, nem rajzoljuk ki
         if (!this.isPlayable) return;
-
-        // Hatszög formájának megrajzolása
         ctx.beginPath();
         for (let i = 0; i < 6; i++) {
             const angleRad = (Math.PI / 3) * i; 
@@ -32,33 +38,29 @@ class Hexagon {
             else ctx.lineTo(vertexX, vertexY);
         }
         ctx.closePath();
-        
-        // Színezés (Játékos színe, vagy semleges szürke)
         if (this.owner) {
             ctx.fillStyle = this.owner.color; 
         } else {
             ctx.fillStyle = "#e0e0e0"; 
         }
         ctx.fill();
-
-        // Letisztult keret
         ctx.strokeStyle = "rgba(0, 0, 0, 0.15)";
         ctx.lineWidth = 2;
         ctx.stroke();
-
-        // Fa rajzolása
         if (this.hasTree) {
             this.drawTree(ctx);
         }
-
-        // Épület rajzolásának DELEGÁLÁSA a Building osztálynak
         if (this.building) {
             Building.draw(ctx, this.building, this.x, this.y, this.size);
         }
     }
 
+    /**
+     * Kirajzol egy fenyőfát a hatszögön.
+     * @param {CanvasRenderingContext2D} ctx - A rajzolási kontextus.
+     * @modifies {Canvas} - Rajzol a vászonra.
+     */
     drawTree(ctx) {
-        // Fenyőfa zöld lombja
         ctx.fillStyle = "#2ecc71"; 
         ctx.beginPath();
         ctx.moveTo(this.x, this.y - this.size * 0.5); // Csúcs
@@ -66,16 +68,19 @@ class Hexagon {
         ctx.lineTo(this.x + this.size * 0.4, this.y + this.size * 0.3); // Jobb alja
         ctx.closePath();
         ctx.fill();
-        
-        // Barna törzs
         ctx.fillStyle = "#795548";
         ctx.fillRect(this.x - this.size * 0.1, this.y + this.size * 0.3, this.size * 0.2, this.size * 0.3);
     }
 
+    /**
+     * Ellenőrzi, hogy egy adott (x, y) pixel pont a hatszög területén belül van-e (gyorsított kör alapú becslés).
+     * @param {number} px - Az egér X koordinátája.
+     * @param {number} py - Az egér Y koordinátája.
+     * @returns {boolean} Igaz, ha a pont a hatszögön belül van.
+     */
     isPointInside(px, py) {
         const dx = px - this.x;
         const dy = py - this.y;
-        // Gyors, kör alapú távolságmérés, ami tökéletes a kattintás érzékeléshez
         return (dx * dx + dy * dy) <= (this.size * 0.9) * (this.size * 0.9);
     }
 }

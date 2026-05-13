@@ -1,10 +1,19 @@
-// js/core/Pathfinder.js
-
 class Pathfinder {
+    /**
+     * Inicializálja az útvonalkereső algoritmust.
+     * @param {GameController} game - A központi játékvezérlő referenciája.
+     */
     constructor(game) {
         this.game = game;
     }
 
+    /**
+     * Kiszámolja a kijelölt mezőn lévő egység számára az összes elérhető mezőt és az odavezető utat (Dijkstra-algoritmus alapján).
+     * Figyelembe veszi a mozgáspontokat, az ellenséges egységek/épületek védelmi szintjét és az összevonási (merge) szabályokat.
+     * @param {Hexagon} startHex - A kiindulási hatszög, ahol a mozgatni kívánt egység áll.
+     * @modifies {GameController.reachableHexes} - Beállítja a mozgáshoz használható mezőket és azok költségeit tartalmazó Map objektumot.
+     * @calls {GameBoard.getNeighbors, GameBoard.getHexDefense}
+     */
     calculateReachableHexes(startHex) {
         const reachableHexes = new Map();
         

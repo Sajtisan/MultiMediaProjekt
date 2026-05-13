@@ -1,13 +1,27 @@
-// js/core/GameBoard.js
-
 class GameBoard {
+    /**
+     * Létrehozza a játéktáblát és elindítja a procedurális térképgenerálást.
+     * @param {number} canvasWidth - A vászon szélessége pixelben.
+     * @param {number} canvasHeight - A vászon magassága pixelben.
+     * @param {number} hexSize - A hatszögek sugara.
+     * @modifies {GameBoard.hexagons, GameBoard.hexList} - Feltölti a pálya belső adatszerkezeteit.
+     * @calls {GameBoard.generateMap}
+     */
     constructor(canvasWidth, canvasHeight, hexSize) {
-        this.hexagons = new Map(); // Gyorsabb keresés koordináta alapján ("q,r" kulccsal)
-        this.hexList = []; // Sorrendi bejáráshoz
-        
+        this.hexagons = new Map();
+        this.hexList = [];
         this.generateMap(canvasWidth, canvasHeight, hexSize);
     }
 
+
+    /**
+     * Legenerálja a kezdeti hatszögrácsot, a lyukakat és az erdőket.
+     * @param {number} width - A játéktér (canvas) szélessége.
+     * @param {number} height - A játéktér (canvas) magassága.
+     * @param {number} hexSize - Egyetlen hatszög mérete.
+     * @modifies {GameBoard.hexagons, GameBoard.hexList} - Feltölti a pálya adatszerkezeteit.
+     * @calls {Hexagon, GameBoard.generateForests}
+     */
     generateMap(width, height, hexSize) {
         const cols = Math.floor(width / (hexSize * 1.5));
         const rows = Math.floor(height / (hexSize * Math.sqrt(3)));
@@ -37,8 +51,12 @@ class GameBoard {
         // 3. Erdők (fák) generálása
         this.generateForests();
     }
-
-    // Segédfüggvény: egy hatszög összes szomszédjának lekérése
+    
+    /**
+     * Lekéri egy adott hatszög érvényes, játszható szomszédait.
+     * @param {Hexagon} hex - A vizsgált hatszög.
+     * @returns {Hexagon[]} A szomszédos hatszögek tömbje.
+     */
     getNeighbors(hex) {
         // Megnézzük, hogy páros (0) vagy páratlan (1) oszlopban van-e a hatszög
         const parity = hex.q & 1; 
@@ -68,6 +86,11 @@ class GameBoard {
         return neighbors;
     }
 
+    /**
+     * Véletlenszerű erdő-klasztereket generál a pálya inicializálásakor.
+     * @modifies {Hexagon.hasTree} - Beállítja a fát a kiválasztott mezőkön.
+     * @calls {GameBoard.getNeighbors}
+     */
     generateForests() {
         // Véletlenszerű magpontok, amik köré erdő nő
         const numForests = Math.floor(this.hexList.length * 0.05); 
@@ -85,7 +108,12 @@ class GameBoard {
         }
     }
 
-    // Játékos kezdőterületének (5 hex) kiosztása
+    /**
+     * Kiosztja egy játékos kezdőterületét (Kocsma + 4 szomszédos mező + 1 katona).
+     * @param {Player} player - A játékos, akinek a területet osztjuk.
+     * @modifies {Hexagon} - Módosítja a tulajdonost, épületet, aranyat és a fákat.
+     * @calls {GameBoard.getNeighbors, Unit}
+     */
     setupPlayerStart(player) {
         let validStart = false;
         let capitalHex = null;
@@ -126,19 +154,27 @@ class GameBoard {
                 }
             }
         }
-        
-        if (!validStart) {
-            console.warn(`Nem maradt elég hely a pályán ${player.name} számára!`);
-        }
     }
 
+    /**
+     * Kirajzolja a pálya összes hatszögét a megadott canvas kontextusra.
+     * @param {CanvasRenderingContext2D} ctx - A rajzolási kontextus (2D).
+     * @modifies {Canvas} - Vizuálisan frissíti a vásznat (játékállapotot nem módosít).
+     * @calls {Hexagon.draw}
+     */
     draw(ctx) {
         for (let hex of this.hexList) {
             hex.draw(ctx);
         }
     }
 
-    // GameBoard.js bővítése
+    /**
+     * Megkeresi a megadott pixel-koordinátán található játszható hatszöget.
+     * @param {number} px - Az egér X koordinátája.
+     * @param {number} py - Az egér Y koordinátája.
+     * @returns {Hexagon|null} A megtalált hatszög, vagy null, ha nincs ott érvényes mező.
+     * @calls {Hexagon.isPointInside}
+     */
     getHexAt(px, py) {
         for (let hex of this.hexList) {
             if (hex.isPlayable && hex.isPointInside(px, py)) {
@@ -148,9 +184,12 @@ class GameBoard {
         return null;
     }
 
-
-    // js/core/GameBoard.js - getHexDefense() módosítása
-
+    /**
+     * Kiszámolja egy mező maximális védelmi értékét a saját és szomszédos egységek/épületek alapján.
+     * @param {Hexagon} hex - A vizsgált hatszög.
+     * @returns {number} A mező védelmi pontszáma.
+     * @calls {GameBoard.getNeighbors}
+     */
     getHexDefense(hex) {
         if (hex.owner === null) return 0;
         let maxDef = 0;
@@ -177,6 +216,11 @@ class GameBoard {
         return maxDef;
     }
 
+    /**
+     * Véletlenszerűen terjeszti a fákat a pálya üres mezőin (a körök végén hívódik meg).
+     * @modifies {Hexagon.hasTree} - Beállítja az új fák helyét.
+     * @calls {GameBoard.getNeighbors}
+     */
     spreadTrees() {
         let newTrees = []; // Ebbe gyűjtjük az új fákat, hogy ne szaporodjanak duplán egy körben
         
@@ -195,10 +239,6 @@ class GameBoard {
         // Az új fák "elültetése"
         for (let hex of newTrees) {
             hex.hasTree = true;
-        }
-        
-        if (newTrees.length > 0) {
-            console.log(`${newTrees.length} új fa nőtt ki a térképen!`);
         }
     }
 }
