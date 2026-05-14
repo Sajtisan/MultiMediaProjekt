@@ -27,6 +27,7 @@ class AudioManager {
         if (this.isUnlocked) return;
 
         for (let key in this.sounds) {
+            if(key === 'bgMusic') continue;
             let sound = this.sounds[key];
             sound.muted = true;
             let playPromise = sound.play();
