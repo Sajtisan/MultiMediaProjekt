@@ -40,11 +40,12 @@ $(document).ready(function () {
 
     /**
      * Elindítja a játékot, példányosítja a fő vezérlőt és elvégzi a menü-játék áttűnést.
+     * Továbbá inicializálja az AudioManager-t: feloldja a böngészős hang-blokkolást és elindítja a háttérzenét.
      * @param {number} hexSize - A játéktér hatszögeinek mérete.
      * @param {number} playerCount - A résztvevő játékosok (klánok) száma.
      * @param {boolean} [isLoad=false] - Igaz, ha a játékot mentésből kell visszaállítani.
      * @modifies {DOM, window.game} - Elrejti a menüt, megjeleníti a canvas-t, globálissá teszi a game objektumot.
-     * @calls {GameController, GameController.loadGame, GameController.provinceManager.updateProvinces, GameController.render, GameController.ui.update}
+     * @calls {AudioManager.unlockAll, AudioManager.startMusic, GameController.loadGame, ProvinceManager.updateProvinces}
      */
     function startGame(hexSize, playerCount, isLoad = false) {
         $('#main-menu').fadeOut(300, function() {
@@ -53,6 +54,11 @@ $(document).ready(function () {
 
         game = new GameController("gameCanvas", hexSize, playerCount);
         
+        // --- ÚJ RÉSZ: HANGOK FELOLDÁSA ÉS ZENE INDÍTÁSA ---
+        game.audio.unlockAll();
+        game.audio.startMusic();
+        // --------------------------------------------------
+
         if (isLoad) {
             game.loadGame();
         } else {

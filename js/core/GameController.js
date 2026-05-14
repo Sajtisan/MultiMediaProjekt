@@ -24,6 +24,7 @@ class GameController {
 
         // --- MANAGEREK ÉS RENDSZEREK INICIALIZÁLÁSA ---
         this.ui = new UIManager(this);
+        this.audio = new AudioManager();
         this.history = new HistoryManager(this);
         this.aiController = new AIController(this);
         this.provinceManager = new ProvinceManager(this.board);
@@ -90,11 +91,13 @@ class GameController {
         if (this.selectedHex && this.selectedHex.unit && this.reachableHexes && this.reachableHexes.has(clickedHex) && clickedHex !== this.selectedHex) {
             const routeData = this.reachableHexes.get(clickedHex);
             const unit = this.selectedHex.unit;
+            let hadCombat = false;
 
             for (let stepHex of routeData.path) {
                 if (stepHex.owner !== this.currentPlayer && stepHex.owner !== null) {
                     stepHex.unit = null;
                     stepHex.building = null;
+                    hadCombat = true;
                 }
                 stepHex.owner = this.currentPlayer;
                 if (stepHex.hasTree) {
@@ -108,6 +111,13 @@ class GameController {
             } else {
                 clickedHex.unit = unit;
                 unit.currentMovement -= routeData.cost;
+            }
+
+            if (hadCombat) {
+                this.audio.play('kill');
+            }
+            else {
+                this.audio.play('move');
             }
 
             this.selectedHex.unit = null;
@@ -140,7 +150,7 @@ class GameController {
      */
     endTurn() {
         // Ha már vége a játéknak, senki ne csináljon semmit!
-        if (this.gameOverManager.isGameOver) return; 
+        if (this.gameOverManager.isGameOver) return;
 
         // MENTÉS: Minden kör végén elmentjük az állást
         this.saveGame();
@@ -216,6 +226,8 @@ class GameController {
             capital.gold -= cost;
             prov.gold = capital.gold;
 
+            this.audio.play('buy');
+
             if (type === 'unit') {
                 this.selectedHex.unit = new Unit(this.currentPlayer, parseInt(value));
                 this.selectedHex.unit.currentMovement = 0;
@@ -261,7 +273,8 @@ class GameController {
 
     /**
      * Elmenti a játék aktuális állását a böngésző memóriájába (localStorage).
-     * @modifies {localStorage} - Felülírja a 'spid_savegame' kulcsot a pálya és a játékosok adataival.
+     * Rögzíti a pálya pontos felépítését (lyukak, fák), a gazdaságot és az egységek megmaradt mozgáspontjait.
+     * @modifies {localStorage} - Felülírja a 'spid_savegame' kulcsot a JSON adattal.
      */
     saveGame() {
         const currentHexSize = this.board.hexList.length > 0 ? this.board.hexList[0].size : 35;
@@ -285,6 +298,7 @@ class GameController {
 
     /**
      * Betölt egy mentett játékállást a localStorage-ból és felülírja a játékteret.
+     * Pontosan visszaállítja az egységek mozgáspontjait is, így a játékos onnan folytathatja a kört, ahol abbahagyta.
      * @returns {boolean} Igaz, ha a betöltés sikeres volt, különben hamis.
      * @modifies {GameController.currentPlayerIdx, Hexagon} - Visszaállítja a mentett állapotokat.
      * @calls {ProvinceManager.updateProvinces, Renderer.render, UIManager.update}
@@ -308,7 +322,7 @@ class GameController {
                     hex.gold = savedHex.gold || 0;
                     if (savedHex.unitLevel) {
                         hex.unit = new Unit(hex.owner, savedHex.unitLevel);
-                        if (savedHex.unitMovement != null){
+                        if (savedHex.unitMovement != null) {
                             hex.unit.currentMovement = savedHex.unitMovement;
                         }
                         else {

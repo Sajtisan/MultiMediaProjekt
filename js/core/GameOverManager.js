@@ -41,7 +41,8 @@ class GameOverManager {
             this.triggerGameEnd(
                 "Kiszorítottak...", 
                 "Elvesztetted az összes területedet. A pénzed elfogyott, az embereid elhagytak, a birodalmad elbukott.", 
-                "#e74c3c"
+                "#e74c3c",
+                "lose"
             );
             return;
         }
@@ -51,7 +52,8 @@ class GameOverManager {
             this.triggerGameEnd(
                 "A Negyed Ura!", 
                 "Gratulálok! Lenyomtad az összes rivális klánt, a kocsmák és italboltok már mind neked tejelnek.", 
-                "#f1c40f"
+                "#f1c40f",
+                "win"
             );
             return;
         }
@@ -64,8 +66,12 @@ class GameOverManager {
      * @param {string} color - A cím szövegszíne (hexadecimális kód).
      * @modifies {GameOverManager.isGameOver, DOM} - Lezárja a játékot és megjeleníti a HTML/CSS panelt.
      */
-    triggerGameEnd(title, desc, color) {
+    triggerGameEnd(title, desc, color, soundKey) {
         this.isGameOver = true;
+
+        this.game.audio.sounds.bgMusic.pause();
+        this.game.audio.play(soundKey);
+
         $('#game-over-title').text(title).css('color', color);
         $('#game-over-desc').text(desc);
         $('#game-over-screen').css('display', 'flex').hide().fadeIn(1000);

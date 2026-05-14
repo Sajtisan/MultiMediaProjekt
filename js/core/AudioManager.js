@@ -5,7 +5,7 @@ class AudioManager {
      */
     constructor() {
         this.sounds = {
-            bgMusic: new Audio('audio/background_night_vibes.mp3'),
+            bgMusic: new Audio('audio/background_music.mp3'),
             buy: new Audio('audio/cash_register.mp3'),
             kill: new Audio('audio/fight_impact.mp3'),
             move: new Audio('audio/footsteps.mp3'),
@@ -15,17 +15,50 @@ class AudioManager {
 
         this.sounds.bgMusic.loop = true;
         this.sounds.bgMusic.volume = 0.4;
+        this.isUnlocked = false;
     }
 
     /**
-     * Lejátszik egy specifikus hangeffektust az elejétől.
-     * @param {string} key - A hang azonosítója (pl. 'buy', 'move').
-     * @modifies {Audio} - Visszaállítja a hangfájl idejét 0-ra és elindítja.
+     * Feloldja a böngésző szigorú Autoplay blokkolását azáltal, hogy a legelső 
+     * felhasználói kattintáskor (főmenü) némítva betölti és megállítja az összes hangot.
+     * @modifies {Audio, AudioManager.isUnlocked} - Engedélyezteti a hangfájlokat a rendszer számára.
+     */
+    unlockAll() {
+        if (this.isUnlocked) return;
+        
+        for (let key in this.sounds) {
+            let sound = this.sounds[key];
+            // Némítva elindítjuk, majd egyből megállítjuk, így a böngésző engedélyezi a későbbi lejátszást
+            sound.muted = true;
+            let playPromise = sound.play();
+            
+            if (playPromise !== undefined) {
+                playPromise.then(() => {
+                    sound.pause();
+                    sound.currentTime = 0;
+                    sound.muted = false;
+                }).catch(e => console.warn(`Autoplay feloldása sikertelen: ${key}`, e));
+            }
+        }
+        this.isUnlocked = true;
+        console.log("Audio motor sikeresen feloldva!");
+    }
+
+    /**
+     * Lejátszik egy specifikus hangeffektust az elejétől. 
+     * Dinamikusan klónozza a hang-node-ot, így gyors egymásutáni kattintásoknál (pl. sorozatos támadás) az effektek nem vágják el egymást.
+     * @param {string} key - A hang azonosítója (pl. 'buy', 'kill', 'move').
+     * @calls {Audio.cloneNode, Audio.play}
      */
     play(key) {
         if (this.sounds[key]) {
-            this.sounds[key].currentTime = 0;
-            this.sounds[key].play().catch(e => console.log("Audio play blocked by browser"));
+            // A háttérzenét nem klónozzuk!
+            if (key === 'bgMusic') return;
+
+            // Klónozzuk a node-ot az egymásra csúszó hangokhoz (pl. gyors lépés/ütés)
+            let soundClone = this.sounds[key].cloneNode();
+            soundClone.volume = this.sounds[key].volume;
+            soundClone.play().catch(e => console.log(`Audio blokkolva (${key}):`, e.message));
         }
     }
 

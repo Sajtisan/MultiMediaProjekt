@@ -10,7 +10,8 @@ class HistoryManager {
     }
 
     /**
-     * Elmenti a pálya aktuális állapotát (tulajdonosok, egységek, épületek, arany) a visszavonási (undo) verembe.
+     * Elmenti a pálya aktuális állapotát a visszavonási (undo) verembe.
+     * Rögzíti a tulajdonosokat, épületeket, aranyat, valamint az egységek szintjét ÉS aktuális mozgáspontjait, hogy elkerülje a "végtelen lépés" exploitot.
      * @modifies {HistoryManager.turnHistory} - Egy új, JSON-be csomagolt állapotot ad a tömb végéhez.
      */
     saveState() {
@@ -29,7 +30,8 @@ class HistoryManager {
     
     /**
      * Visszaállítja a játékteret a legutolsó elmentett állapotra (Undo funkció a játékos körén belül).
-     * @modifies {HistoryManager.turnHistory, Hexagon} - Kiveszi az utolsó mentést a veremből, és felülírja a mezők tulajdonságait.
+     * Visszatölti a pontos mozgáspontokat is, illetve megszünteti az esetlegesen beragadt vizuális kijelöléseket és útvonalakat.
+     * @modifies {HistoryManager.turnHistory, Hexagon, GameController.selectedHex, GameController.reachableHexes} - Felülírja a mezők tulajdonságait és tisztítja a UI-t.
      * @calls {ProvinceManager.updateProvinces, Renderer.render, UIManager.update}
      */
     undo() {
