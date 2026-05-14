@@ -18,6 +18,7 @@ class HistoryManager {
             hexes: this.game.board.hexList.map(h => ({
                 ownerId: h.owner ? h.owner.id : null, 
                 unitLevel: h.unit ? h.unit.level : null,
+                unitMovement: h.unit ? h.unit.currentMovement : null,
                 building: h.building,
                 gold: h.gold,
                 hasTree: h.hasTree
@@ -46,14 +47,17 @@ class HistoryManager {
             
             if (savedHex.unitLevel) {
                 hex.unit = new Unit(hex.owner, savedHex.unitLevel);
+                if (savedHex.unitMovement != null)
+                hex.unit.currentMovement = savedHex.unitMovement;
             } else {
                 hex.unit = null;
             }
         });
-
+        this.game.selectedHex = null;
+        this.game.reachableHexes = new Map();
         this.game.provinceManager.updateProvinces();
         this.game.render();
-        this.game.ui.update(); // Szólunk a UI managernek, hogy frissítsen
+        this.game.ui.update();
     }
 
     /**

@@ -264,18 +264,17 @@ class GameController {
      * @modifies {localStorage} - Felülírja a 'spid_savegame' kulcsot a pálya és a játékosok adataival.
      */
     saveGame() {
-        // Kinyerjük a hexSize-t
         const currentHexSize = this.board.hexList.length > 0 ? this.board.hexList[0].size : 35;
-
         const saveData = {
             hexSize: currentHexSize,
             playerCount: this.players.length,
             currentPlayerIdx: this.currentPlayerIdx,
             boardData: this.board.hexList.map(h => ({
                 q: h.q, r: h.r,
-                isPlayable: h.isPlayable,                // ÚJ: A lyukakat is mentjük!
+                isPlayable: h.isPlayable,
                 ownerId: h.owner ? h.owner.id : null,
                 unitLevel: h.unit ? h.unit.level : null,
+                unitMovement: h.unit ? h.unit.currentMovement : null,
                 building: h.building,
                 gold: h.gold || 0,
                 hasTree: h.hasTree
@@ -299,23 +298,22 @@ class GameController {
 
         try {
             this.currentPlayerIdx = data.currentPlayerIdx;
-
             data.boardData.forEach(savedHex => {
                 let hex = this.board.hexList.find(h => h.q === savedHex.q && h.r === savedHex.r);
                 if (hex) {
-                    // Visszatöltjük a lyukakat és fákat
                     hex.isPlayable = savedHex.isPlayable;
                     hex.hasTree = savedHex.hasTree;
-                    
-                    // Tulajdonos és épületek visszaállítása
                     hex.owner = savedHex.ownerId !== null ? this.players[savedHex.ownerId] : null;
-                    hex.building = savedHex.building || null; // A || null fontos, hogy eltüntesse a véletlen generált Kocsmákat!
+                    hex.building = savedHex.building || null;
                     hex.gold = savedHex.gold || 0;
-                    
-                    // Egységek visszaállítása
                     if (savedHex.unitLevel) {
                         hex.unit = new Unit(hex.owner, savedHex.unitLevel);
-                        hex.unit.currentMovement = 0; // Betöltés után biztonsági okokból már nem mozognak
+                        if (savedHex.unitMovement != null){
+                            hex.unit.currentMovement = savedHex.unitMovement;
+                        }
+                        else {
+                            hex.unit.currentMovement = 0;
+                        }
                     } else {
                         hex.unit = null; // Letöröljük a start-up során generált véletlen egységeket!
                     }

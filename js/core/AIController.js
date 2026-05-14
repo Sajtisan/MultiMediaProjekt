@@ -26,41 +26,32 @@ class AIController {
                 if (this.game.reachableHexes && this.game.reachableHexes.size > 0) {
                     let bestTarget = null;
                     let bestScore = -1;
-
                     for (let [targetHex, data] of this.game.reachableHexes) {
                         let score = 0;
-                        
-                        // Célpontok súlyozása
                         if (targetHex.owner !== player) {
                             if (targetHex.owner === null) {
-                                score = 40; // Semleges terület (terjeszkedés)
+                                score = 40;
                             } else {
-                                score = 80; // Ellenséges terület
-                                if (targetHex.building === 'capital') score = 300; // Kocsma bevétele a legfontosabb!
-                                if (targetHex.building && targetHex.building.startsWith('tower')) score = 120; // Tornyok (Kidobó/ZH/Rendőr)
-                                if (targetHex.building === 'house') score = 100; // Italbolt
+                                score = 80;
+                                if (targetHex.building === 'capital') score = 300;
+                                if (targetHex.building && targetHex.building.startsWith('tower')) score = 120;
+                                if (targetHex.building === 'house') score = 100;
                             }
-                            if (targetHex.hasTree) score += 15; // Favágás bónusz
+                            if (targetHex.hasTree) score += 15;
                         } else if (targetHex.unit && targetHex.unit !== hex.unit) {
-                            // Saját egység fúzió (MERGE) - max Maffiás (Level 4) szintig
                             if (hex.unit.level + targetHex.unit.level <= 4) {
                                 score = 20; 
                             }
                         }
-
                         if (score > bestScore) {
                             bestScore = score;
                             bestTarget = { hex: targetHex, path: data.path, cost: data.cost };
                         }
                     }
-
-                    // Végrehajtás, ha talált jó célpontot
                     if (bestTarget && bestScore > 0) {
                         const unit = hex.unit;
-                        
                         for (let stepHex of bestTarget.path) {
                             if (stepHex.owner !== player && stepHex.owner !== null) {
-                                // Zsákmányolás, ha Kocsmát foglal el
                                 if (stepHex.building === 'capital' && hex.province) {
                                     const loot = stepHex.gold || 0;
                                     hex.province.gold += loot;
@@ -72,60 +63,47 @@ class AIController {
                             stepHex.owner = player;
                             stepHex.hasTree = false;
                         }
-
-                        // Összevonás vagy sima lépés
                         if (bestTarget.hex.unit && bestTarget.hex.owner === player) {
                             bestTarget.hex.unit.level += unit.level;
                             bestTarget.hex.unit.currentMovement = 0;
                         } else {
                             bestTarget.hex.unit = unit;
-                            bestTarget.hex.unit.currentMovement -= bestTarget.cost;
+                           bestTarget.hex.unit.currentMovement -= bestTarget.cost;
                         }
-                        hex.unit = null; // Eredeti hely kiürítése
+                        hex.unit = null;
                     }
                 }
-                this.game.reachableHexes = new Map(); // Töröljük a memóriát a következő egység előtt
+                this.game.reachableHexes = new Map();
             }
         }
-
         // ==========================================
         // 2. FÁZIS: GAZDASÁG ÉS VÁSÁRLÁS
         // ==========================================
         for (let prov of this.game.provinceManager.provinces) {
             if (prov.owner === player && prov.capitalHex) {
-                
                 prov.calculateEconomy();
-
                 while (prov.capitalHex.gold >= 10) {
-                    // Biztonsági fék: ha csőd fenyeget, nem veszünk több embert
                     if (prov.income - prov.upkeep < -5) break; 
-
                     let boughtSomething = false;
                     let gold = prov.capitalHex.gold;
-
-                    // --- 1. Italbolt építése (Belső, biztonságos mezőkre) ---
                     let internalHexes = prov.hexes.filter(h => 
                         h.unit === null && h.building === null && !h.hasTree &&
                         !this.game.board.getNeighbors(h).some(n => n.owner !== player)
                     );
-
                     if (internalHexes.length > 0 && gold >= 12 && Math.random() < 0.4) {
                         let target = internalHexes[Math.floor(Math.random() * internalHexes.length)];
                         target.building = 'house';
                         prov.capitalHex.gold -= 12;
                         boughtSomething = true;
                     }
-
                     // --- 2. Védelem (Kidobó/ZH/Rendőr) a határokra ---
                     if (!boughtSomething) {
                         let borderHexes = prov.hexes.filter(h => 
                             h.unit === null && h.building === null && !h.hasTree &&
                             this.game.board.getNeighbors(h).some(n => n.owner !== player)
                         );
-
                         if (borderHexes.length > 0 && gold >= 15) {
                             let target = borderHexes[Math.floor(Math.random() * borderHexes.length)];
-                            
                             if (gold >= 70 && Math.random() < 0.1) {
                                 target.building = 'tower3'; prov.capitalHex.gold -= 70; boughtSomething = true;
                             } else if (gold >= 35 && Math.random() < 0.15) {
@@ -135,43 +113,32 @@ class AIController {
                             }
                         }
                     }
-
                     // --- 3. Katona toborzása (Csöves vagy Egyetemista) ---
                     if (!boughtSomething) {
                         let borderHexes = prov.hexes.filter(h => 
                             h.unit === null && h.building === null && !h.hasTree &&
                             this.game.board.getNeighbors(h).some(n => n.owner !== player)
                         );
-
                         if (borderHexes.length > 0) {
                             let target = borderHexes[Math.floor(Math.random() * borderHexes.length)];
                             let level = 1;
                             let cost = 10;
-                            
-                            // Ha dől a lé, jöhet az Egyetemista (T2)
                             if (gold >= 20 && (prov.income - prov.upkeep > 10)) {
                                 level = 2; cost = 20;
                             }
-
                             target.unit = new Unit(player, level);
-                            target.unit.currentMovement = 0; // Toborzás után idén már nem léphet
+                            target.unit.currentMovement = 0;
                             prov.capitalHex.gold -= cost;
                             boughtSomething = true;
                         }
                     }
-
-                    // Ha semmit nem tudott venni (pl. minden üres hely elfogyott), kilép a ciklusból
                     if (!boughtSomething) break;
                     prov.calculateEconomy(); 
                 }
             }
         }
-
-        // Kör lezárása
         this.game.provinceManager.updateProvinces();
         this.game.render();
-        
-        // Fél másodperc szünet, hogy lássuk a UI-on, kire ugrik a kör
         setTimeout(() => {
             this.game.endTurn();
         }, 500);
