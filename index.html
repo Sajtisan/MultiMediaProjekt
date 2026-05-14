@@ -72,13 +72,13 @@
             </div>
 
             <div id="build-menu" style="display: none; margin-top: 15px;">
-                <h4 style="margin-bottom: 5px; color: #2c3e50;">Építkezés</h4>
+                <h4 style="margin-bottom: 5px; color: #3498db;">Építkezés</h4>
                 <button class="ui-button build-btn" data-type="building" data-id="house" data-cost="12">Italbolt (12G)</button>
                 <button class="ui-button build-btn" data-type="building" data-id="tower1" data-cost="15">Kidobó (15G)</button>
                 <button class="ui-button build-btn" data-type="building" data-id="tower2" data-cost="35">ZH (35G)</button>
                 <button class="ui-button build-btn" data-type="building" data-id="tower3" data-cost="70">Rendőr (70G)</button>
 
-                <h4 style="margin-top: 15px; margin-bottom: 5px; color: #2c3e50;">Toborzás</h4>
+                <h4 style="margin-top: 15px; margin-bottom: 5px; color: #e74c3c;">Toborzás</h4>
                 <button class="ui-button build-btn" data-type="unit" data-level="1" data-cost="10">Csöves (10G)</button>
                 <button class="ui-button build-btn" data-type="unit" data-level="2" data-cost="20">Egyetemista (20G)</button>
                 <button class="ui-button build-btn" data-type="unit" data-level="3" data-cost="30">Delinquent (30G)</button>
@@ -96,31 +96,35 @@
     </div>
 
 
-    <div id="guide-panel" style="display:none; position:fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); width: 450px; background: #16213e; border: 2px solid #3498db; padding: 25px; border-radius: 15px; z-index: 3000; box-shadow: 0 0 50px rgba(0,0,0,0.9); color: #ecf0f1;">
+    <div id="guide-panel" style="display:none; position:fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); width: 550px; background: #16213e; border: 2px solid #3498db; padding: 25px; border-radius: 15px; z-index: 3000; box-shadow: 0 0 50px rgba(0,0,0,0.9); color: #ecf0f1;">
         <h2 style="color: #f1c40f; text-align: center;">Hogyan játssz? (SPÍD Kisokos)</h2>
         <hr style="border-color: #8e44ad;">
         
-        <div style="line-height: 1.6; max-height: 400px; overflow-y: auto; padding-right: 10px;">
+        <div style="line-height: 1.6; max-height: 450px; overflow-y: auto; padding-right: 15px;">
             <p><strong>Cél:</strong> Maradj te az egyetlen klán az éjszakában! Foglald el az ellenséges Kocsmákat, és szorítsd ki a többieket.</p>
-            <p><strong>Gazdaság:</strong> Minden birtokolt mező +1 Aranyat ad körönként. Az Italbolt további +4-et.</p>
+            <p><strong>Alap Gazdaság:</strong> Minden birtokolt, üres (fa és épület nélküli) mező <strong>+1 Aranyat</strong> termel körönként.</p>
             
-            <h3 style="color: #3498db; margin-top: 15px;">Épületek</h3>
+            <h3 style="color: #3498db; margin-top: 15px;">Épületek (Költség / Termelés)</h3>
             <ul style="padding-left: 20px;">
-                <li><strong>Kocsma (Főváros):</strong> Itt gyűlik a pénz. Ha elveszted, a terület bevétele a támadóé lesz!</li>
-                <li><strong>Italbolt (House):</strong> A gazdaság motorja. +4 Aranyat ad körönként az adott tartománynak.</li>
-                <li><strong>Kidobó (T1), ZH (T2), Rendőr (T3):</strong> Védelmi tornyok. Egy T2-es ZH-t például csak egy legalább 3-as szintű egység (Delinquent vagy Maffiás) tud elfoglalni.</li>
+                <li><strong>Kocsma (Főváros):</strong> Ingyenes. <strong>+5 Aranyat</strong> termel. <em>Védelmi szint: 1</em>. (Ha elveszted, a terület bevétele a támadóé lesz!)</li>
+                <li><strong>Italbolt:</strong> Ára: <strong>12G</strong>. <strong>+5 Aranyat</strong> termel. <em>Védelmi szint: 0</em>. A gazdaság motorja.</li>
+                <li><strong>Kidobó (T1):</strong> Ára: <strong>15G</strong>. Nem termel. <em>Védelmi szint: 1</em>.</li>
+                <li><strong>ZH (T2):</strong> Ára: <strong>35G</strong>. Nem termel. <em>Védelmi szint: 2</em>.</li>
+                <li><strong>Rendőr (T3):</strong> Ára: <strong>70G</strong>. Nem termel. <em>Védelmi szint: 3</em>.</li>
             </ul>
+            <p style="font-size: 0.9em; color: #bdc3c7;"><em>Tipp: Egy tornyot (pl. T2) csak annál nagyobb, vagy vele egyenlő szintű egység (Lvl 2+) tud elfoglalni!</em></p>
             
-            <h3 style="color: #e74c3c;">Egységek</h3>
+            <h3 style="color: #e74c3c;">Egységek (Ár / Zsold)</h3>
             <ul style="padding-left: 20px;">
-                <li><strong>Csöves (Lvl 1):</strong> Olcsó fenntartani (2G).</li>
-                <li><strong>Egyetemista (Lvl 2):</strong> Gyors területfoglaló (6G).</li>
-                <li><strong>Delinquent (Lvl 3):</strong> Komoly harcos (18G).</li>
-                <li><strong>Maffiás (Lvl 4):</strong> A legerősebb fegyver (54G). <em>Vigyázz, hamar csődbe visz!</em></li>
+                <li><strong>Csöves (Lvl 1):</strong> Ára: <strong>10G</strong>. Zsold: <strong>-2G</strong> / kör.</li>
+                <li><strong>Egyetemista (Lvl 2):</strong> Ára: <strong>20G</strong>. Zsold: <strong>-6G</strong> / kör.</li>
+                <li><strong>Delinquent (Lvl 3):</strong> Ára: <strong>30G</strong>. Zsold: <strong>-18G</strong> / kör.</li>
+                <li><strong>Maffiás (Lvl 4):</strong> Ára: <strong>40G</strong>. Zsold: <strong>-54G</strong> / kör.</li>
             </ul>
+            <p style="font-size: 0.9em; color: #e74c3c;"><em>Figyelem! Ha a tartományod aranya mínuszba megy (csőd), <strong>minden egységed eltűnik</strong> arról a területről!</em></p>
         </div>
         
-        <button id="close-guide-btn" class="ui-button danger-btn" style="margin-top: 20px;">Megértettem, irány az utca!</button>
+        <button id="close-guide-btn" class="ui-button danger-btn" style="margin-top: 20px; width: 100%;">Megértettem, irány az utca!</button>
     </div>
 
 

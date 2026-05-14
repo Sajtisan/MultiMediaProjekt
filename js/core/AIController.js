@@ -30,14 +30,22 @@ class AIController {
                                 score = 40;
                             } else {
                                 score = 80;
-                                if (targetHex.building === 'capital') score = 300;
-                                if (targetHex.building && targetHex.building.startsWith('tower')) score = 120;
-                                if (targetHex.building === 'house') score = 100;
+                                if (targetHex.building === 'capital') score = 300; // Kocsma bevétele a legfontosabb!
+                                if (targetHex.building && targetHex.building.startsWith('tower')) score = 120; // Tornyok
+                                if (targetHex.building === 'house') score = 100; // Italbolt
                             }
-                            if (targetHex.hasTree) score += 15;
+                            if (targetHex.hasTree) score += 15; // Favágás bónusz
                         } else if (targetHex.unit && targetHex.unit !== hex.unit) {
-                            if (hex.unit.level + targetHex.unit.level <= 4) {
-                                score = 20;
+                            let newLevel = hex.unit.level + targetHex.unit.level;
+                            if (newLevel <= 4) {
+                                let currentUpkeep = GameConfig.units[hex.unit.level].upkeep + GameConfig.units[targetHex.unit.level].upkeep;
+                                let expectedUpkeep = GameConfig.units[newLevel].upkeep;
+                                let extraCost = expectedUpkeep - currentUpkeep;
+                                if (hex.province && (hex.province.income - hex.province.upkeep - extraCost < 0)) {
+                                    score = -1000; 
+                                } else {
+                                    score = 20; 
+                                }
                             }
                         }
                         if (score > bestScore) {
@@ -67,10 +75,10 @@ class AIController {
                             bestTarget.hex.unit = unit;
                             bestTarget.hex.unit.currentMovement -= bestTarget.cost;
                         }
-                        hex.unit = null;
+                        hex.unit = null; 
                     }
                 }
-                this.game.reachableHexes = new Map();
+                this.game.reachableHexes = new Map(); 
             }
         }
         // ==========================================
@@ -80,10 +88,11 @@ class AIController {
             if (prov.owner === player && prov.capitalHex) {
                 prov.calculateEconomy();
                 while (prov.capitalHex.gold >= 10) {
-                    if (prov.income - prov.upkeep < -5) break;
                     let boughtSomething = false;
                     let gold = prov.capitalHex.gold;
-                    let internalHexes = prov.hexes.filter(h =>
+                    let profit = prov.income - prov.upkeep;
+                    // --- 1. Italbolt építése ---
+                    let internalHexes = prov.hexes.filter(h => 
                         h.unit === null && h.building === null && !h.hasTree &&
                         !this.game.board.getNeighbors(h).some(n => n.owner !== player)
                     );
@@ -93,14 +102,15 @@ class AIController {
                         prov.capitalHex.gold -= 12;
                         boughtSomething = true;
                     }
-                    // --- 2. Védelem (Kidobó/ZH/Rendőr) a határokra ---
+                    // --- 2. Védelem a határokra ---
                     if (!boughtSomething) {
-                        let borderHexes = prov.hexes.filter(h =>
+                        let borderHexes = prov.hexes.filter(h => 
                             h.unit === null && h.building === null && !h.hasTree &&
                             this.game.board.getNeighbors(h).some(n => n.owner !== player)
                         );
                         if (borderHexes.length > 0 && gold >= 15) {
                             let target = borderHexes[Math.floor(Math.random() * borderHexes.length)];
+                            
                             if (gold >= 70 && Math.random() < 0.1) {
                                 target.building = 'tower3'; prov.capitalHex.gold -= 70; boughtSomething = true;
                             } else if (gold >= 35 && Math.random() < 0.15) {
@@ -110,9 +120,9 @@ class AIController {
                             }
                         }
                     }
-                    // --- 3. Katona toborzása (Csöves vagy Egyetemista) ---
-                    if (!boughtSomething) {
-                        let borderHexes = prov.hexes.filter(h =>
+                    // --- 3. Katona toborzása ---
+                    if (!boughtSomething && profit > 0) {
+                        let borderHexes = prov.hexes.filter(h => 
                             h.unit === null && h.building === null && !h.hasTree &&
                             this.game.board.getNeighbors(h).some(n => n.owner !== player)
                         );
@@ -120,17 +130,25 @@ class AIController {
                             let target = borderHexes[Math.floor(Math.random() * borderHexes.length)];
                             let level = 1;
                             let cost = 10;
-                            if (gold >= 20 && (prov.income - prov.upkeep > 10)) {
+
+                            if (gold >= 40 && profit > 60) {
+                                level = 4; cost = 40;
+                            } else if (gold >= 30 && profit > 22) {
+                                level = 3; cost = 30;
+                            } else if (gold >= 20 && profit > 8) {
                                 level = 2; cost = 20;
                             }
-                            target.unit = new Unit(player, level);
-                            target.unit.currentMovement = 0;
-                            prov.capitalHex.gold -= cost;
-                            boughtSomething = true;
+                            let expectedUpkeep = GameConfig.units[level].upkeep;
+                            if (profit - expectedUpkeep >= 0) {
+                                target.unit = new Unit(player, level);
+                                target.unit.currentMovement = 0;
+                                prov.capitalHex.gold -= cost;
+                                boughtSomething = true;
+                            }
                         }
                     }
                     if (!boughtSomething) break;
-                    prov.calculateEconomy();
+                    prov.calculateEconomy(); 
                 }
             }
         }

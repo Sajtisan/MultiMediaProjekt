@@ -44,17 +44,16 @@ class AudioManager {
     }
 
     /**
-     * Lejátszik egy specifikus hangeffektust az elejétől. 
-     * Dinamikusan klónozza a hang-node-ot, így gyors egymásutáni kattintásoknál (pl. sorozatos támadás) az effektek nem vágják el egymást.
+     * Lejátszik egy specifikus hangeffektust.
+     * Nem klónozza a hangokat, hanem újraindítja őket, így elkerülhető a zavaró hang-átfedés (overlap).
      * @param {string} key - A hang azonosítója (pl. 'buy', 'kill', 'move').
-     * @calls {Audio.cloneNode, Audio.play}
+     * @calls {Audio.play}
      */
     play(key) {
         if (this.sounds[key]) {
             if (key === 'bgMusic') return;
-            let soundClone = this.sounds[key].cloneNode();
-            soundClone.volume = this.sounds[key].volume;
-            soundClone.play().catch(e => console.log(`Audio blokkolva (${key}):`, e.message));
+            this.sounds[key].currentTime = 0;
+            this.sounds[key].play().catch(e => console.log(`Audio blokkolva (${key}):`, e.message));
         }
     }
 
