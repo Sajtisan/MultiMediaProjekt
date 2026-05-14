@@ -17,7 +17,7 @@ class HistoryManager {
     saveState() {
         const state = {
             hexes: this.game.board.hexList.map(h => ({
-                ownerId: h.owner ? h.owner.id : null, 
+                ownerId: h.owner ? h.owner.id : null,
                 unitLevel: h.unit ? h.unit.level : null,
                 unitMovement: h.unit ? h.unit.currentMovement : null,
                 building: h.building,
@@ -27,7 +27,7 @@ class HistoryManager {
         };
         this.turnHistory.push(JSON.stringify(state));
     }
-    
+
     /**
      * Visszaállítja a játékteret a legutolsó elmentett állapotra (Undo funkció a játékos körén belül).
      * Visszatölti a pontos mozgáspontokat is, illetve megszünteti az esetlegesen beragadt vizuális kijelöléseket és útvonalakat.
@@ -38,19 +38,19 @@ class HistoryManager {
         if (this.turnHistory.length === 0) return;
 
         const lastState = JSON.parse(this.turnHistory.pop());
-        
+
         lastState.hexes.forEach((savedHex, index) => {
             const hex = this.game.board.hexList[index];
-            
+
             hex.owner = savedHex.ownerId !== null ? this.game.players[savedHex.ownerId] : null;
             hex.building = savedHex.building;
             hex.gold = savedHex.gold;
             hex.hasTree = savedHex.hasTree;
-            
+
             if (savedHex.unitLevel) {
                 hex.unit = new Unit(hex.owner, savedHex.unitLevel);
                 if (savedHex.unitMovement != null)
-                hex.unit.currentMovement = savedHex.unitMovement;
+                    hex.unit.currentMovement = savedHex.unitMovement;
             } else {
                 hex.unit = null;
             }

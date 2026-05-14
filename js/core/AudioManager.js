@@ -25,13 +25,11 @@ class AudioManager {
      */
     unlockAll() {
         if (this.isUnlocked) return;
-        
+
         for (let key in this.sounds) {
             let sound = this.sounds[key];
-            // Némítva elindítjuk, majd egyből megállítjuk, így a böngésző engedélyezi a későbbi lejátszást
             sound.muted = true;
             let playPromise = sound.play();
-            
             if (playPromise !== undefined) {
                 playPromise.then(() => {
                     sound.pause();
@@ -52,10 +50,7 @@ class AudioManager {
      */
     play(key) {
         if (this.sounds[key]) {
-            // A háttérzenét nem klónozzuk!
             if (key === 'bgMusic') return;
-
-            // Klónozzuk a node-ot az egymásra csúszó hangokhoz (pl. gyors lépés/ütés)
             let soundClone = this.sounds[key].cloneNode();
             soundClone.volume = this.sounds[key].volume;
             soundClone.play().catch(e => console.log(`Audio blokkolva (${key}):`, e.message));

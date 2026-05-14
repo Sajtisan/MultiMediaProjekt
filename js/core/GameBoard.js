@@ -25,8 +25,8 @@ class GameBoard {
     generateMap(width, height, hexSize) {
         const cols = Math.floor(width / (hexSize * 1.5));
         const rows = Math.floor(height / (hexSize * Math.sqrt(3)));
-        const startX = hexSize; 
-        const startY = hexSize * Math.sqrt(3) / 2; 
+        const startX = hexSize;
+        const startY = hexSize * Math.sqrt(3) / 2;
 
         // 1. Alap rács legenerálása
         for (let q = 0; q < cols; q++) {
@@ -40,18 +40,16 @@ class GameBoard {
                 this.hexList.push(hex);
             }
         }
-
         // 2. Lyukak fúrása a pályába (kb 10% eséllyel)
         for (let hex of this.hexList) {
             if (Math.random() < 0.10) {
                 hex.isPlayable = false;
             }
         }
-
         // 3. Erdők (fák) generálása
         this.generateForests();
     }
-    
+
     /**
      * Lekéri egy adott hatszög érvényes, játszható szomszédait.
      * @param {Hexagon} hex - A vizsgált hatszög.
@@ -59,26 +57,21 @@ class GameBoard {
      */
     getNeighbors(hex) {
         // Megnézzük, hogy páros (0) vagy páratlan (1) oszlopban van-e a hatszög
-        const parity = hex.q & 1; 
-        
+        const parity = hex.q & 1;
         // Relatív koordináta eltolások táblázata (dq, dr)
         // Az irányok sorrendje: jobb-le, jobb-fel, fel, bal-fel, bal-le, le
         const offsets = [
             // Páros oszlopok (q % 2 == 0) eltolásai
-            [[+1,  0], [+1, -1], [0, -1], [-1, -1], [-1,  0], [0, +1]],
+            [[+1, 0], [+1, -1], [0, -1], [-1, -1], [-1, 0], [0, +1]],
             // Páratlan oszlopok (q % 2 != 0) eltolásai
-            [[+1, +1], [+1,  0], [0, -1], [-1,  0], [-1, +1], [0, +1]]
+            [[+1, +1], [+1, 0], [0, -1], [-1, 0], [-1, +1], [0, +1]]
         ];
-
         const neighbors = [];
         const currentOffsets = offsets[parity];
-
         for (let [dq, dr] of currentOffsets) {
             const nq = hex.q + dq;
             const nr = hex.r + dr;
-            
             const neighbor = this.hexagons.get(`${nq},${nr}`);
-            // Csak akkor adjuk hozzá, ha létezik a mező és játszható (nem lyuk)
             if (neighbor && neighbor.isPlayable) {
                 neighbors.push(neighbor);
             }
@@ -93,8 +86,8 @@ class GameBoard {
      */
     generateForests() {
         // Véletlenszerű magpontok, amik köré erdő nő
-        const numForests = Math.floor(this.hexList.length * 0.05); 
-        
+        const numForests = Math.floor(this.hexList.length * 0.05);
+
         for (let i = 0; i < numForests; i++) {
             let startHex = this.hexList[Math.floor(Math.random() * this.hexList.length)];
             if (!startHex.isPlayable) continue;
@@ -117,36 +110,34 @@ class GameBoard {
     setupPlayerStart(player) {
         let validStart = false;
         let capitalHex = null;
-        let attempts = 0; // Biztonsági számláló a fagyás ellen!
+        let attempts = 0;
 
         // Keresünk egy érvényes középpontot (max 1000 próbálkozás)
         while (!validStart && attempts < 1000) {
             attempts++;
             capitalHex = this.hexList[Math.floor(Math.random() * this.hexList.length)];
-            
+
             // Ha a mező nem játszható, vagy már valakié, keresünk tovább
             if (!capitalHex.isPlayable || capitalHex.owner !== null) continue;
 
             let neighbors = this.getNeighbors(capitalHex);
             let freeNeighbors = neighbors.filter(n => n.owner === null);
-            
+
             // Ha van 4 szabad hely, VAGY ha már 500-szor próbálkoztunk és van legalább 2 szabad hely (kicsi pálya esetén)
             if (freeNeighbors.length >= 4 || (attempts > 500 && freeNeighbors.length >= 2)) {
                 validStart = true;
-                
+
                 // Beállítjuk a fővárost
                 capitalHex.owner = player;
                 capitalHex.building = 'capital';
                 capitalHex.hasTree = false; // Kivágjuk a fát a főváros alatt
                 capitalHex.gold = 10;
-
                 // Elfoglaljuk a szabad szomszédokat (amennyi épp van, max 4-et)
                 let toClaim = Math.min(4, freeNeighbors.length);
                 for (let i = 0; i < toClaim; i++) {
                     freeNeighbors[i].owner = player;
-                    freeNeighbors[i].hasTree = false; // Kezdőterületen nincsenek fák
+                    freeNeighbors[i].hasTree = false;
                 }
-
                 // Kezdő katona lerakása
                 if (toClaim > 0) {
                     let randomSpawnHex = freeNeighbors[Math.floor(Math.random() * toClaim)];
@@ -196,9 +187,7 @@ class GameBoard {
 
         const checkDef = (h) => {
             let d = 0;
-            // Egység védelme megegyezik a szintjével
             if (h.unit) d = Math.max(d, h.unit.level);
-            // Épület védelme a configból jön
             if (h.building && GameConfig.buildings[h.building]) {
                 d = Math.max(d, GameConfig.buildings[h.building].defense);
             }
@@ -222,8 +211,7 @@ class GameBoard {
      * @calls {GameBoard.getNeighbors}
      */
     spreadTrees() {
-        let newTrees = []; // Ebbe gyűjtjük az új fákat, hogy ne szaporodjanak duplán egy körben
-        
+        let newTrees = [];
         for (let hex of this.hexList) {
             if (hex.hasTree) {
                 let neighbors = this.getNeighbors(hex);
@@ -235,8 +223,6 @@ class GameBoard {
                 }
             }
         }
-        
-        // Az új fák "elültetése"
         for (let hex of newTrees) {
             hex.hasTree = true;
         }

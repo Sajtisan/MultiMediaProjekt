@@ -18,11 +18,8 @@ class AIController {
         // 1. FÁZIS: MOZGATÁS ÉS TÁMADÁS
         // ==========================================
         for (let hex of this.game.board.hexList) {
-            // Ha a mi egységünk és tud még lépni
             if (hex.owner === player && hex.unit && hex.unit.currentMovement > 0) {
-                
                 this.game.pathfinder.calculateReachableHexes(hex);
-                
                 if (this.game.reachableHexes && this.game.reachableHexes.size > 0) {
                     let bestTarget = null;
                     let bestScore = -1;
@@ -40,7 +37,7 @@ class AIController {
                             if (targetHex.hasTree) score += 15;
                         } else if (targetHex.unit && targetHex.unit !== hex.unit) {
                             if (hex.unit.level + targetHex.unit.level <= 4) {
-                                score = 20; 
+                                score = 20;
                             }
                         }
                         if (score > bestScore) {
@@ -68,7 +65,7 @@ class AIController {
                             bestTarget.hex.unit.currentMovement = 0;
                         } else {
                             bestTarget.hex.unit = unit;
-                           bestTarget.hex.unit.currentMovement -= bestTarget.cost;
+                            bestTarget.hex.unit.currentMovement -= bestTarget.cost;
                         }
                         hex.unit = null;
                     }
@@ -83,10 +80,10 @@ class AIController {
             if (prov.owner === player && prov.capitalHex) {
                 prov.calculateEconomy();
                 while (prov.capitalHex.gold >= 10) {
-                    if (prov.income - prov.upkeep < -5) break; 
+                    if (prov.income - prov.upkeep < -5) break;
                     let boughtSomething = false;
                     let gold = prov.capitalHex.gold;
-                    let internalHexes = prov.hexes.filter(h => 
+                    let internalHexes = prov.hexes.filter(h =>
                         h.unit === null && h.building === null && !h.hasTree &&
                         !this.game.board.getNeighbors(h).some(n => n.owner !== player)
                     );
@@ -98,7 +95,7 @@ class AIController {
                     }
                     // --- 2. Védelem (Kidobó/ZH/Rendőr) a határokra ---
                     if (!boughtSomething) {
-                        let borderHexes = prov.hexes.filter(h => 
+                        let borderHexes = prov.hexes.filter(h =>
                             h.unit === null && h.building === null && !h.hasTree &&
                             this.game.board.getNeighbors(h).some(n => n.owner !== player)
                         );
@@ -115,7 +112,7 @@ class AIController {
                     }
                     // --- 3. Katona toborzása (Csöves vagy Egyetemista) ---
                     if (!boughtSomething) {
-                        let borderHexes = prov.hexes.filter(h => 
+                        let borderHexes = prov.hexes.filter(h =>
                             h.unit === null && h.building === null && !h.hasTree &&
                             this.game.board.getNeighbors(h).some(n => n.owner !== player)
                         );
@@ -133,7 +130,7 @@ class AIController {
                         }
                     }
                     if (!boughtSomething) break;
-                    prov.calculateEconomy(); 
+                    prov.calculateEconomy();
                 }
             }
         }

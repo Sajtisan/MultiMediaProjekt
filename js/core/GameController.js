@@ -149,19 +149,13 @@ class GameController {
      * @calls {GameController.saveGame, ProvinceManager.endTurnEconomy, GameBoard.spreadTrees, GameOverManager.checkGameState, AIController.takeTurn}
      */
     endTurn() {
-        // Ha már vége a játéknak, senki ne csináljon semmit!
         if (this.gameOverManager.isGameOver) return;
-
-        // MENTÉS: Minden kör végén elmentjük az állást
         this.saveGame();
-
         this.history.clear();
         const isStillAlive = this.provinceManager.endTurnEconomy(this.currentPlayer);
-
         if (!isStillAlive) {
             this.currentPlayer.isDead = true;
         }
-
         if (!this.currentPlayer.isDead) {
             for (let hex of this.board.hexList) {
                 if (hex.unit && hex.unit.owner === this.currentPlayer) {
@@ -169,26 +163,16 @@ class GameController {
                 }
             }
         }
-
         this.board.spreadTrees();
-
-        // JÁTÉK VÉGÉNEK ELLENŐRZÉSE! (Győzelem / Vereség)
         this.gameOverManager.checkGameState();
-
-        // Ha az ellenőrzés során vége lett a játéknak, azonnal megállítjuk a kört
         if (this.gameOverManager.isGameOver) return;
-
-        // Következő ÉLŐ játékos keresése
         this.currentPlayerIdx = (this.currentPlayerIdx + 1) % this.players.length;
         while (this.players[this.currentPlayerIdx].isDead) {
             this.currentPlayerIdx = (this.currentPlayerIdx + 1) % this.players.length;
         }
-
         this.selectedHex = null;
         this.render();
         this.ui.update();
-
-        // AI indítása ha ő jön
         if (this.currentPlayer.isAI && !this.currentPlayer.isDead) {
             setTimeout(() => this.aiController.takeTurn(this.currentPlayer), 500);
         }
@@ -309,7 +293,6 @@ class GameController {
             alert("Nincs mentett játék!");
             return false;
         }
-
         try {
             this.currentPlayerIdx = data.currentPlayerIdx;
             data.boardData.forEach(savedHex => {
@@ -329,11 +312,10 @@ class GameController {
                             hex.unit.currentMovement = 0;
                         }
                     } else {
-                        hex.unit = null; // Letöröljük a start-up során generált véletlen egységeket!
+                        hex.unit = null;
                     }
                 }
             });
-
             this.provinceManager.updateProvinces();
             this.render();
             this.ui.update();

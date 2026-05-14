@@ -42,7 +42,7 @@ class Renderer {
             if (hex.unit) {
                 let yOffset = 0;
                 if (this.game.selectedHex === hex) {
-                    yOffset = Math.sin(this.animTimer) * 5; 
+                    yOffset = Math.sin(this.animTimer) * 5;
                 }
                 hex.unit.draw(this.ctx, hex.x, hex.y + yOffset, hex.size);
             }
@@ -58,17 +58,17 @@ class Renderer {
         }
         if (this.game.selectedHex && this.game.reachableHexes) {
             for (let [hex, data] of this.game.reachableHexes) {
-                if (hex === this.game.selectedHex) continue; 
+                if (hex === this.game.selectedHex) continue;
                 this.ctx.beginPath();
                 for (let i = 0; i < 6; i++) {
-                    const angleRad = (Math.PI / 3) * i; 
+                    const angleRad = (Math.PI / 3) * i;
                     const vertexX = hex.x + hex.size * Math.cos(angleRad);
                     const vertexY = hex.y + hex.size * Math.sin(angleRad);
                     if (i === 0) this.ctx.moveTo(vertexX, vertexY);
                     else this.ctx.lineTo(vertexX, vertexY);
                 }
                 this.ctx.closePath();
-                this.ctx.fillStyle = "rgba(46, 204, 113, 0.4)"; 
+                this.ctx.fillStyle = "rgba(46, 204, 113, 0.4)";
                 this.ctx.fill();
                 this.ctx.fillStyle = "rgba(0, 0, 0, 0.5)";
                 this.ctx.font = "10px Arial";

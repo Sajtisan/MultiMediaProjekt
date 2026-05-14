@@ -31,7 +31,7 @@ class Hexagon {
         if (!this.isPlayable) return;
         ctx.beginPath();
         for (let i = 0; i < 6; i++) {
-            const angleRad = (Math.PI / 3) * i; 
+            const angleRad = (Math.PI / 3) * i;
             const vertexX = this.x + this.size * Math.cos(angleRad);
             const vertexY = this.y + this.size * Math.sin(angleRad);
             if (i === 0) ctx.moveTo(vertexX, vertexY);
@@ -39,9 +39,9 @@ class Hexagon {
         }
         ctx.closePath();
         if (this.owner) {
-            ctx.fillStyle = this.owner.color; 
+            ctx.fillStyle = this.owner.color;
         } else {
-            ctx.fillStyle = "#e0e0e0"; 
+            ctx.fillStyle = "#e0e0e0";
         }
         ctx.fill();
         ctx.strokeStyle = "rgba(0, 0, 0, 0.15)";
@@ -61,7 +61,7 @@ class Hexagon {
      * @modifies {Canvas} - Rajzol a vászonra.
      */
     drawTree(ctx) {
-        ctx.fillStyle = "#2ecc71"; 
+        ctx.fillStyle = "#2ecc71";
         ctx.beginPath();
         ctx.moveTo(this.x, this.y - this.size * 0.5); // Csúcs
         ctx.lineTo(this.x - this.size * 0.4, this.y + this.size * 0.3); // Bal alja

@@ -14,7 +14,7 @@ $(document).ready(function () {
      * @modifies {DOM} - Kinyeri a beállításokat a menüből.
      * @calls {startGame}
      */
-    $('#start-game-btn').click(function() {
+    $('#start-game-btn').click(function () {
         const hexSize = parseInt($('#map-size').val());
         const playerCount = parseInt($('#player-count').val());
         startGame(hexSize, playerCount, false);
@@ -25,13 +25,12 @@ $(document).ready(function () {
      * @modifies {DOM} - Hibaüzenetet dob, ha nincs mentés.
      * @calls {startGame}
      */
-    $('#load-game-btn').click(function() {
+    $('#load-game-btn').click(function () {
         const savedData = JSON.parse(localStorage.getItem('spid_savegame'));
-        
+
         if (savedData && savedData.boardData) {
             const hexSize = savedData.hexSize || 35;
             const playerCount = savedData.playerCount || 2;
-            
             startGame(hexSize, playerCount, true);
         } else {
             alert("Nincs elmentett hódításod! Kezdj egy új játékot.");
@@ -48,17 +47,12 @@ $(document).ready(function () {
      * @calls {AudioManager.unlockAll, AudioManager.startMusic, GameController.loadGame, ProvinceManager.updateProvinces}
      */
     function startGame(hexSize, playerCount, isLoad = false) {
-        $('#main-menu').fadeOut(300, function() {
+        $('#main-menu').fadeOut(300, function () {
             $('#game-container').css('display', 'flex').hide().fadeIn(500);
         });
-
         game = new GameController("gameCanvas", hexSize, playerCount);
-        
-        // --- ÚJ RÉSZ: HANGOK FELOLDÁSA ÉS ZENE INDÍTÁSA ---
         game.audio.unlockAll();
         game.audio.startMusic();
-        // --------------------------------------------------
-
         if (isLoad) {
             game.loadGame();
         } else {
@@ -113,7 +107,6 @@ $(document).ready(function () {
             const type = $(this).data('type');
             const cost = parseInt($(this).data('cost'));
             const value = type === 'unit' ? $(this).data('level') : $(this).data('id');
-
             game.buyItem(type, value, cost);
             game.ui.update();
         }

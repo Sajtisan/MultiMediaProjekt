@@ -25,7 +25,7 @@ class Province {
             if (hex.building === 'capital') {
                 this.income += GameConfig.buildings['capital'].income;
                 this.capitalHex = hex;
-                this.gold = hex.gold || 0; 
+                this.gold = hex.gold || 0;
             } else if (hex.building) {
                 this.income += GameConfig.buildings[hex.building].income;
             } else if (!hex.hasTree) {
@@ -84,7 +84,7 @@ class ProvinceManager {
                     }
                     newCapitalHex.building = 'capital';
                     newCapitalHex.gold = 0;
-                } 
+                }
                 else if (capitals.length > 1) {
                     let mainCapital = capitals[0];
                     for (let i = 1; i < capitals.length; i++) {
@@ -109,24 +109,24 @@ class ProvinceManager {
      * @calls {ProvinceManager.updateProvinces}
      */
     endTurnEconomy(player) {
-        this.updateProvinces(); 
+        this.updateProvinces();
         let playerHasTerritory = false;
         for (let prov of this.provinces) {
             if (prov.owner === player) {
-                playerHasTerritory = true; 
+                playerHasTerritory = true;
                 const profit = prov.income - prov.upkeep;
                 prov.gold += profit;
-                if (prov.gold < 0) {                    
+                if (prov.gold < 0) {
                     for (let hex of prov.hexes) {
-                        hex.unit = null; 
+                        hex.unit = null;
                     }
-                    prov.gold = 0; 
+                    prov.gold = 0;
                 }
                 if (prov.capitalHex) {
                     prov.capitalHex.gold = prov.gold;
                 }
             }
         }
-        return playerHasTerritory; 
+        return playerHasTerritory;
     }
 }

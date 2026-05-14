@@ -17,7 +17,7 @@ class UIManager {
         const currentPlayer = this.game.currentPlayer;
         if (selectedHex && selectedHex.owner === currentPlayer && selectedHex.province) {
             const prov = selectedHex.province;
-            prov.calculateEconomy(); 
+            prov.calculateEconomy();
             $('#province-info').show();
             $('#ui-gold').text(prov.gold);
             const profit = prov.income - prov.upkeep;
@@ -25,7 +25,7 @@ class UIManager {
             $('#ui-profit').text(profitText).css('color', (profit >= 0) ? '#2ecc71' : '#e74c3c');
             if (selectedHex.unit === null && !selectedHex.hasTree && selectedHex.building === null) {
                 $('#build-menu').show();
-                $('.build-btn').each(function() {
+                $('.build-btn').each(function () {
                     const cost = parseInt($(this).data('cost'));
                     if (prov.gold >= cost) {
                         $(this).prop('disabled', false).css('opacity', '1');
